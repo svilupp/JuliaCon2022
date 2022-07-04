@@ -1,0 +1,37 @@
+name = "MediaMixModellingDemo"
+uuid = "4e93a9b9-a149-4ac6-a861-ccd6e00daaca"
+authors = ["Svilup"]
+version = "0.1.0"
+
+[deps]
+AdvancedHMC = "0bf59076-c3b1-5ca4-86bd-e02cd72cde3d"
+BenchmarkTools = "6e4b80f9-dd63-53aa-95a3-0cdb28fa8baf"
+CSV = "336ed68f-0bac-5ca0-87d4-7b16caf5d00b"
+Chain = "8be319e6-bccf-4806-a6f7-6fae938471bc"
+DataFrames = "a93c6f00-e57d-5684-b7b6-d8193f3e46c0"
+DataFramesMeta = "1313f7d8-7da2-5740-9ea0-a2ca25f37964"
+Distributions = "31c24e10-a181-5473-b8eb-7969acd0382f"
+FFTW = "7a1cc6ca-52ef-59f5-83cd-3a7055c09341"
+MCMCChains = "c7f686f2-ff18-58e9-bc7b-31028e88f75d"
+Metaheuristics = "bcdb8e00-2c21-11e9-3065-2b553b22f898"
+Optim = "429524aa-4258-5aef-a3af-852621145aeb"
+Parameters = "d96e819e-fc66-5662-9728-84c9c7592b0a"
+Plots = "91a5bcdd-55d7-5caf-9e0b-520d859cae80"
+Revise = "295af30f-e4ad-537b-8983-00126c2a3abe"
+ShiftedArrays = "1277b4bf-5013-50f5-be3d-901d8477a67a"
+Splines2 = "5a560754-308a-11ea-3701-ef72685e98d6"
+StatsFuns = "4c63d2b9-4356-54db-8cca-17b64c39e42c"
+StatsPlots = "f3b207a7-027a-5e70-b257-86293d7955fd"
+TableTransforms = "0d432bfd-3ee1-4ac1-886a-39f05cc69a3e"
+TabularDisplay = "3eeacb1d-13c2-54cc-9b18-30c86af3cadb"
+Turing = "fce5fe82-541a-59a6-adf8-730c64b5f9a0"
+VegaLite = "112f6efa-9a02-5b7d-90c0-432ed331239a"
+
+[compat]
+julia = "1.6"
+
+[extras]
+Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
+
+[targets]
+test = ["Test"]
