@@ -25,10 +25,33 @@ StatsPlots = "f3b207a7-027a-5e70-b257-86293d7955fd"
 TableTransforms = "0d432bfd-3ee1-4ac1-886a-39f05cc69a3e"
 TabularDisplay = "3eeacb1d-13c2-54cc-9b18-30c86af3cadb"
 Turing = "fce5fe82-541a-59a6-adf8-730c64b5f9a0"
-VegaLite = "112f6efa-9a02-5b7d-90c0-432ed331239a"
 
 [compat]
 julia = "1.6"
+AdvancedHMC = "0.3"
+BenchmarkTools = "1"
+Chain = "0.4"
+CSV = "0.10"
+DataFrames = "1"
+DataFramesMeta = "0.11"
+Distributions = "0.25"
+FFTW = "1"
+MCMCChains = "5"
+Metaheuristics = "3"
+Optim = "1"
+Parameters = "0.12"
+Plots = "1"
+Revise = "3"
+ShiftedArrays = "1"
+Splines2 = "0.2"
+StatsFuns = "1"
+StatsPlots = "0.14"
+TableTransforms = "1"
+TabularDisplay = "1"
+Turing = "0.21"
+
+
+
 
 [extras]
 Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
