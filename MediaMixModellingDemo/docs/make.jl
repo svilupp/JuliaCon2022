@@ -5,12 +5,12 @@ DocMeta.setdocmeta!(MediaMixModellingDemo, :DocTestSetup, :(using MediaMixModell
 
 makedocs(;
     modules=[MediaMixModellingDemo],
-    authors="Svilup",
-    repo="https://github.com/svilup/JuliaCon2022/MediaMixModellingDemo.jl/blob/{commit}{path}#{line}",
+    authors="Svilupp",
+    repo="https://github.com/svilupp/JuliaCon2022/MediaMixModellingDemo.jl/blob/{commit}{path}#{line}",
     sitename="MediaMixModellingDemo.jl",
     format=Documenter.HTML(;
         prettyurls=get(ENV, "CI", "false") == "true",
-        canonical="https://svilup.github.io/MediaMixModellingDemo.jl",
+        canonical="https://svilupp.github.io/MediaMixModellingDemo.jl",
         edit_link="main",
         assets=String[],
     ),
@@ -22,6 +22,6 @@ makedocs(;
 )
 
 deploydocs(;
-    repo="github.com/svilup/JuliaCon2022/MediaMixModellingDemo.jl",
+    repo="github.com/svilupp/JuliaCon2022/MediaMixModellingDemo.jl",
     devbranch="main",
 )
