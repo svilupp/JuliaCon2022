@@ -28,3 +28,5 @@ Manifest.toml
 # Python
 **/.ipynb_checkpoints/*
 
+# Ignore sync
+/no_sync/*

@@ -27,8 +27,7 @@
 - [Orbit / KTR model](https://juanitorduz.github.io/orbit_mmm/)
 
 ## Other / On Transformations on the Input Variables
-- [Weibull transformation case study (for Adstock)](https://github.com/annalectnl/weibull-adstock/blob/master/adstock_weibull_annalect.pdf
-http://business-science.pl/dont-get-the-wrong-impression-assessing-the-best-input-variable-to-reflect-meta-in-mmm/)
+- [Weibull transformation case study (for Adstock)](https://github.com/annalectnl/weibull-adstock/blob/master/adstock_weibull_annalect.pdf) and [here](http://business-science.pl/dont-get-the-wrong-impression-assessing-the-best-input-variable-to-reflect-meta-in-mmm/)
 
 ## Other / Attribution
 - Survey attribution in Numpyro [here](https://vincentk1991.github.io/survey-attribution-numpyro/)

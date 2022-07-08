@@ -4,7 +4,7 @@ CurrentModule = MediaMixModellingDemo
 
 # Introduction
 
-This is a documentation for [MediaMixModellingDemo](https://github.com/svilup/JuliaCon2022/MediaMixModellingDemo.jl).
+This is a documentation for [MediaMixModellingDemo](https://github.com/svilupp/JuliaCon2022/tree/main/MediaMixModellingDemo).
 
 It's an example produced to acompany a talk at JuliaCon 2022.
 
