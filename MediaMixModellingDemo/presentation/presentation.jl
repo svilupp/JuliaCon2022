@@ -7,7 +7,12 @@ using InteractiveUtils
 # This Pluto notebook uses @bind for interactivity. When running this notebook outside of Pluto, the following 'mock version' of @bind gives bound variables a default value (instead of an error).
 macro bind(def, element)
     quote
-        local iv = try Base.loaded_modules[Base.PkgId(Base.UUID("6e696c72-6542-2067-7265-42206c756150"), "AbstractPlutoDingetjes")].Bonds.initial_value catch; b -> missing; end
+        local iv = try
+            Base.loaded_modules[Base.PkgId(Base.UUID("6e696c72-6542-2067-7265-42206c756150"),
+                                           "AbstractPlutoDingetjes")].Bonds.initial_value
+        catch
+            b -> missing
+        end
         local el = $(esc(element))
         global $(esc(def)) = Core.applicable(Base.get, el) ? Base.get(el) : iv(el)
         el
@@ -15,10 +20,10 @@ macro bind(def, element)
 end
 
 # ╔═╡ 76f05f84-f850-11ec-37a3-c1077156acf8
-begin 
-	using PlutoUI, Plots, Logging, HypertextLiteral,Printf
-	import StatsFuns,Distributions
-	include("../src/marketing_transformations.jl")
+begin
+    using PlutoUI, Plots, Logging, HypertextLiteral, Printf
+    import StatsFuns, Distributions
+    include("../src/marketing_transformations.jl")
 end;
 
 # ╔═╡ 475e6f79-090c-49a1-b914-8a5e2ca08fe6
@@ -26,53 +31,52 @@ html"<button onclick='present()'>Present</button>"
 
 # ╔═╡ c4ca34c4-c853-4cd6-9128-3797924a21b4
 begin
-	SlideNextPrev() = @htl("""
-	<script id="first">
-	
-		var editor = document.querySelector("pluto-editor")
-		var prev = document.querySelector("button.changeslide.prev")
-		var next = document.querySelector("button.changeslide.next")
-		
-		const click_background = (e => {
-			// debugger;
-			if (editor != e.target) return;
-			e.preventDefault();		
-			console.log(e.button);
-			if (e.button === 2 && prev) {
-				prev.click();
-			} else if (e.button === 0 && next) {
-				next.click();
-			} 
-		})
-		editor.addEventListener("click", click_background)
-		editor.addEventListener("contextmenu", click_background)
-	
-		invalidation.then(() => { 
-			editor.removeEventListener("click", click_background);
-			editor.removeEventListener("contextmenu", click_background);
-		})
-		
-		return true;
-	</script>
-	""");
-	SlideNextPrev()
+    SlideNextPrev() = @htl("""
+    <script id="first">
+
+    	var editor = document.querySelector("pluto-editor")
+    	var prev = document.querySelector("button.changeslide.prev")
+    	var next = document.querySelector("button.changeslide.next")
+    	
+    	const click_background = (e => {
+    		// debugger;
+    		if (editor != e.target) return;
+    		e.preventDefault();		
+    		console.log(e.button);
+    		if (e.button === 2 && prev) {
+    			prev.click();
+    		} else if (e.button === 0 && next) {
+    			next.click();
+    		} 
+    	})
+    	editor.addEventListener("click", click_background)
+    	editor.addEventListener("contextmenu", click_background)
+
+    	invalidation.then(() => { 
+    		editor.removeEventListener("click", click_background);
+    		editor.removeEventListener("contextmenu", click_background);
+    	})
+    	
+    	return true;
+    </script>
+    """)
+    SlideNextPrev()
 end
 
 # ╔═╡ 9d0ee860-04fb-4f57-8971-dd00ac6da1e9
 begin
-	disable_logging(LogLevel(1));
-	
-	struct Foldable{C}
-	    title::String
-	    content::C
-	end
-	
-	function Base.show(io, mime::MIME"text/html", fld::Foldable)
-	    write(io,"<details><summary>$(fld.title)</summary><p>")
-	    show(io, mime, fld.content)
-	    write(io,"</p></details>")
-	end
+    disable_logging(LogLevel(1))
 
+    struct Foldable{C}
+        title::String
+        content::C
+    end
+
+    function Base.show(io, mime::MIME"text/html", fld::Foldable)
+        write(io, "<details><summary>$(fld.title)</summary><p>")
+        show(io, mime, fld.content)
+        write(io, "</p></details>")
+    end
 end
 
 # ╔═╡ c699ce78-62fe-4d13-bf30-563e3efd8197
@@ -155,14 +159,13 @@ Decay Rate ($$\theta$$): $(@bind decay_rate Slider(0:0.05:1, default = 0.3,show_
 """
 
 # ╔═╡ 6bd5a2f0-5824-48f1-911f-8e6cfb558cca
-let x=[100ones(1);zeros(10)]
-	
-	bar(1:size(x,1),geometric_decay(x,decay_rate,false),
-		label="Adstock (Decay Rate: $decay_rate)",
-	    legend = :topright,
-		title="Adstock with Geometric Decay",
-		xticks=(0:11,0:11),
-		xguide="Period",yguide="Adstock (USD)")
+let x = [100ones(1); zeros(10)]
+    bar(1:size(x, 1), geometric_decay(x, decay_rate, false),
+        label = "Adstock (Decay Rate: $decay_rate)",
+        legend = :topright,
+        title = "Adstock with Geometric Decay",
+        xticks = (0:11, 0:11),
+        xguide = "Period", yguide = "Adstock (USD)")
 end
 
 # ╔═╡ 614295c4-7ff3-419a-be6e-c5e34d01b4d8
@@ -188,30 +191,31 @@ Slope (n): $(@bind slope Slider(0:0.2:5, default = 2,show_value=true))
 
 # ╔═╡ 9e380a66-1e3b-4937-a4a6-0f904fb8f934
 let
-	# saturated response variable at a given spend level (=x)
-	saturated_response_func(x)=beta_max*hill_curve(x, halfmaxpoint,slope)
-	# annotate mroas at any given point
-	function mroas_annotation_helper(pl,current_spend)
-		delta=1
-		rev_=saturated_response_func(current_spend)
-		rev_marginal=saturated_response_func(current_spend+delta)
-		mroas=(rev_marginal-rev_)/delta
-		
-		scatter!(pl,[current_spend],[rev_],label="",color=:gray)
-	    hline!(pl,[rev_],color=:gray,label="",linestyle=:dash)
-	    vline!(pl,[current_spend],color=:gray,label="",linestyle=:dash)
-	    annotate!(pl,current_spend+0.5,rev_*0.98,text(@sprintf("mROAS: %.1fx",mroas),8,:left,:top))
-	end
-	
-	pl=plot(saturated_response_func,0,50,
-			title="Hill Curve Ad Spend Saturation",
-			xguide="Ad spend (USD)",yguide="Revenue Contribution (USD)",
-	        label="Halfmax point: $halfmaxpoint, Slope: $slope",legend=:bottomright)
+    # saturated response variable at a given spend level (=x)
+    saturated_response_func(x) = beta_max * hill_curve(x, halfmaxpoint, slope)
+    # annotate mroas at any given point
+    function mroas_annotation_helper(pl, current_spend)
+        delta = 1
+        rev_ = saturated_response_func(current_spend)
+        rev_marginal = saturated_response_func(current_spend + delta)
+        mroas = (rev_marginal - rev_) / delta
 
-	mroas_annotation_helper(pl,20)
-	mroas_annotation_helper(pl,10)
-	mroas_annotation_helper(pl,5)
-	# rev_,rev_marginal
+        scatter!(pl, [current_spend], [rev_], label = "", color = :gray)
+        hline!(pl, [rev_], color = :gray, label = "", linestyle = :dash)
+        vline!(pl, [current_spend], color = :gray, label = "", linestyle = :dash)
+        annotate!(pl, current_spend + 0.5, rev_ * 0.98,
+                  text(@sprintf("mROAS: %.1fx", mroas), 8, :left, :top))
+    end
+
+    pl = plot(saturated_response_func, 0, 50,
+              title = "Hill Curve Ad Spend Saturation",
+              xguide = "Ad spend (USD)", yguide = "Revenue Contribution (USD)",
+              label = "Halfmax point: $halfmaxpoint, Slope: $slope", legend = :bottomright)
+
+    mroas_annotation_helper(pl, 20)
+    mroas_annotation_helper(pl, 10)
+    mroas_annotation_helper(pl, 5)
+    # rev_,rev_marginal
 end
 
 # ╔═╡ 41cd3379-b8c9-4439-8ff8-48af93e3d3e8

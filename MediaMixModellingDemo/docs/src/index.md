@@ -12,10 +12,6 @@ It's an example produced to acompany a talk at JuliaCon 2022.
 ```
 
 ```@contents
-Pages = ["index.md", "practical_tips.md","resources.md"]
+Pages = ["index.md", "methodology.md","practical_tips.md","resources.md"]
 Depth = 3
-```
-
-```@autodocs
-Modules = [MediaMixModellingDemo]
 ```

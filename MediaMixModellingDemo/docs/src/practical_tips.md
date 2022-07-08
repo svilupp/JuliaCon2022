@@ -1,4 +1,4 @@
-# Practical Tips and Tricks
+# Practical Tips 
 
 ## Getting Started 
 As the first step, read through the [Robyn package documentation](https://facebookexperimental.github.io/Robyn/docs/quick-start/)

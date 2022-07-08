@@ -1,5 +1,6 @@
-using FFTW
-using Formatting
+using FFTW: fftfreq, fft
+using Printf: @sprintf
+using Formatting: printfmtln
 
 """
     function plot_periodogram(input_arr) 
@@ -14,27 +15,27 @@ p=10 # period is 10
 y=sin.(2π/p*collect(1:20)) # generate 20 data points
 plot_periodogram(y,1) # plot periodogram, period=10 should be highlighted as maximum
 """
-function plot_periodogram(input_arr,top_k=1::Int64)
-    @assert top_k>=1
-    
-    dim=size(input_arr,1)
-    @assert dim>2
-    
-    half_dim=dim ÷ 2 +1
-    periods=(1 ./ fftfreq(dim)) |>x->x[2:half_dim]
-    
-    data=fft(input_arr).|>abs |>x->x[2:half_dim]
-    topk_idx=sortperm(data,rev=true)
-    
-    pl=scatter(periods,data,
-        title="Periodogram",label="Coefficients",xlabel="Period length")
+function plot_periodogram(input_arr, top_k = 1::Int64)
+    @assert top_k >= 1
+
+    dim = size(input_arr, 1)
+    @assert dim > 2
+
+    half_dim = dim ÷ 2 + 1
+    periods = (1 ./ fftfreq(dim)) |> x -> x[2:half_dim]
+
+    data = fft(input_arr) .|> abs |> x -> x[2:half_dim]
+    topk_idx = sortperm(data, rev = true)
+
+    pl = scatter(periods, data,
+                 title = "Periodogram", label = "Coefficients", xlabel = "Period length")
     for i in 1:top_k
-        pos=topk_idx[i]
-        val=data[pos]
-        per=periods[pos]
-        
-        vline!(pl,[per],label="Period: "*@sprintf("%.1f",per))
-        printfmtln("#{:d} period: {:.1f} with {:,.1f}",i,per,val)
+        pos = topk_idx[i]
+        val = data[pos]
+        per = periods[pos]
+
+        vline!(pl, [per], label = "Period: " * @sprintf("%.1f", per))
+        printfmtln("#{:d} period: {:.1f} with {:,.1f}", i, per, val)
     end
     return pl
 end
@@ -53,14 +54,14 @@ Returns array of shape: (size(t,1),2n)
 seaso=generate_fourier_series(1:400,365.25, 5)
 
 """
-function generate_fourier_series(t, p=365.25, n=5)
-    dim=size(t,1)
-    fourier_base=Array{Float64,2}(undef,(dim,n))
+function generate_fourier_series(t, p = 365.25, n = 5)
+    dim = size(t, 1)
+    fourier_base = Array{Float64, 2}(undef, (dim, n))
 
-    for j in axes(fourier_base,2), i in axes(fourier_base,1)
-        fourier_base[i,j]=2π/p*j*t[i]
+    for j in axes(fourier_base, 2), i in axes(fourier_base, 1)
+        fourier_base[i, j] = 2π / p * j * t[i]
     end
-    return hcat(cos.(fourier_base),sin.(fourier_base))
+    return hcat(cos.(fourier_base), sin.(fourier_base))
 end
 
 """
@@ -79,15 +80,15 @@ seaso=generate_fourier_series(1:400,365.25, 5)
 """
 function generate_seasonality_features(time_index, seasonality_arr)
     @assert seasonality_arr isa Vector
-    @assert eltype(seasonality_arr) <: Tuple{Real,Int64,String}
-    
-    results=[]
-    for (period,deg,label) in seasonality_arr
-        data=generate_fourier_series(time_index,period,deg)
-        names=[@sprintf("seasonality%s_%02d",label,i) for i in 1:(2*deg)]
-        push!(results,DataFrame(data,names))
+    @assert eltype(seasonality_arr) <: Tuple{Real, Int64, String}
+
+    results = []
+    for (period, deg, label) in seasonality_arr
+        data = generate_fourier_series(time_index, period, deg)
+        names = [@sprintf("seasonality%s_%02d", label, i) for i in 1:(2 * deg)]
+        push!(results, DataFrame(data, names))
     end
-    return reduce(hcat,results)
+    return reduce(hcat, results)
 end
 
 """
@@ -100,21 +101,19 @@ Example:
 `y_std,pipe_cache_y=standardize_by_max(select(df,target_label))`
 """
 function standardize_by_max(X)
-    pipe=MinMax()
-    
+    pipe = MinMax()
+
     _, pipe_cache = apply(pipe, X)
-    
+
     # force minimum to be 0. and re-apply
     for i in eachindex(pipe_cache)
-        pipe_cache[i]=merge(pipe_cache[i], (;xl=0.))
+        pipe_cache[i] = merge(pipe_cache[i], (; xl = 0.0))
     end
 
-    output = reapply(pipe, X,pipe_cache) 
-    
-    return output,pipe_cache
+    output = reapply(pipe, X, pipe_cache)
+
+    return output, pipe_cache
 end
-
-
 
 """
     standardize_by_zscore(X)
@@ -125,9 +124,9 @@ Example:
 `y_std,pipe_cache_y=standardize_by_zscore(select(df,target_label))`
 """
 function standardize_by_zscore(X)
-    pipe=ZScore()
-    
+    pipe = ZScore()
+
     output, pipe_cache = apply(pipe, X)
-    
-    return output,pipe_cache
+
+    return output, pipe_cache
 end
