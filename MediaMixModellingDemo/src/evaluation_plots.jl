@@ -2,6 +2,7 @@ using ShiftedArrays: lag
 
 # Parameters
 @with_kw struct ParamsPlot
+    title_suffix = ""
     color_spend = palette(:default)[6]
     color_spend_optimized = palette(:default)[6]
     color_revenues = palette(:default)[1]
@@ -43,12 +44,12 @@ function plot_model_fit_by_period(y_true, y_pred, p)
           color = p.color_revenues,
           yguide = "Revenues")
 
-    annotate!(pl, annotation_points[1]...,
+    annotate!(annotation_points[1]...,
               text("Goodness of Fit", "helvetica bold", 10, :black, :top, :left))
-    annotate!(pl, annotation_points[2]...,
+    annotate!(annotation_points[2]...,
               text(@sprintf("Pseudo R2: %.1f%%", pseudor2(y_true, y_pred)*100), "helvetica",
                    8, :black, :top, :left))
-    annotate!(pl, annotation_points[3]...,
+    annotate!(annotation_points[3]...,
               text(@sprintf("NRMSE: %.1f%%", nrmse(y_true, y_pred)*100), "helvetica", 8,
                    :black, :top, :left))
 
@@ -73,7 +74,7 @@ function plot_contributions(effect_shares, cols, p)
     end
 
     yticks_ = 1:length(cols)
-    xticks_ = 0:0.1:1 .|> x -> round(x; digits = 1)
+    xticks_ = 0:0.2:1 .|> x -> round(x; digits = 1)
 
     plt_colorscheme = [p.color_revenues, :transparent]
     plt_colors = getindex.(Ref(plt_colorscheme), temp_to_plot.variable .|> levelcode)
@@ -93,7 +94,7 @@ function plot_contributions(effect_shares, cols, p)
 
     # Labels
     for row in eachrow(unstack(temp_to_plot, :variable, :value; fill = 0))
-        annotate!(pl, (row.base + row.effect_share) + 0.01, levelcode(row.labels),
+        annotate!((row.base + row.effect_share) + 0.01, levelcode(row.labels),
                   text(pct_formatter1f(row.effect_share), 8, :black, :mid, :left))
     end
 
@@ -132,7 +133,7 @@ function plot_effects_vs_spend(effect_shares, spend_shares, cols, p)
 
     for row in eachrow(temp_to_plot)
         y_offset = row.variable == plt_groups[1] ? -0.7 : -0.3
-        annotate!(pl, row.value + 0.01, levelcode(row.labels) + y_offset,
+        annotate!(row.value + 0.01, levelcode(row.labels) + y_offset,
                   text(pct_formatter1f(row.value), 8, :black, :mid, :left))
     end
 
@@ -152,27 +153,27 @@ function plot_response_curves_table(decay_rates, roass, mroas_at_means, cols, ro
               title = "Fitted Response Curves")
 
     # TOTAL ROAS
-    annotate!(pl, 0.5, 0.1,
+    annotate!(0.5, 0.1,
               text(@sprintf("Overall ROAS: %.1fx", roas_total), p.table_fontsize_header,
                    :black, :mid, :center))
 
     # Headers
-    annotate!(pl, 0.2, length(cols) - 0.15,
+    annotate!(0.2, length(cols) - 0.15,
               text("Decay Rate", p.table_fontsize_header, :black, :mid, :center))
-    annotate!(pl, 0.5, length(cols) - 0.15,
+    annotate!(0.5, length(cols) - 0.15,
               text("ROAS", p.table_fontsize_header, :black, :mid, :center))
-    annotate!(pl, 0.8, length(cols) - 0.15,
+    annotate!(0.8, length(cols) - 0.15,
               text("mROAS (@mean)", p.table_fontsize_header, :black, :mid, :center))
 
     for (label, decay_, roas_, mroas_) in zip(plt_labels, decay_rates, roass,
                                               mroas_at_means)
-        annotate!(pl, 0.2, levelcode(label) - 0.5,
+        annotate!(0.2, levelcode(label) - 0.5,
                   text(pct_formatter1f(decay_), p.table_fontsize_body, :black, :mid,
                        :center))
-        annotate!(pl, 0.5, levelcode(label) - 0.5,
+        annotate!(0.5, levelcode(label) - 0.5,
                   text(@sprintf("%.1fx", roas_), p.table_fontsize_body, :black, :mid,
                        :center))
-        annotate!(pl, 0.8, levelcode(label) - 0.5,
+        annotate!(0.8, levelcode(label) - 0.5,
                   text(@sprintf("%.1fx", mroas_), p.table_fontsize_body, :black, :mid,
                        :center))
     end
@@ -239,7 +240,7 @@ function plot_optimized_spend_share_comparison(spend_share_prev, spend_share_opt
 
     for row in eachrow(temp_to_plot)
         y_offset = row.variable == plt_groups[1] ? -0.7 : -0.3
-        annotate!(pl, row.value + 0.01, levelcode(row.labels) + y_offset,
+        annotate!(row.value + 0.01, levelcode(row.labels) + y_offset,
                   text(pct_formatter1f(row.value), 8, :black, :mid, :left))
     end
 
@@ -267,24 +268,24 @@ function plot_optimized_contribution(effect_prev, effect_optim, roas_total, opti
                 label = "", bar_width = 0.5, ylim = (0, 1.2 * pl_max))
     end
     # Summary
-    annotate!(pl, 0, 0, text("", "helvetica bold", 10, :black, :top, :left))
-    annotate!(pl, 0.2, pl_max * 1.15,
+    annotate!(0, 0, text("", "helvetica bold", 10, :black, :top, :left))
+    annotate!(0.2, pl_max * 1.15,
               text("Period: $(optim_start) - $(optim_end)",
                    "helvetica bold", p.table_fontsize_body, :black, :mid, :left))
-    annotate!(pl, 0.2, pl_max * 1.1,
+    annotate!(0.2, pl_max * 1.1,
               text("ROAS: " * @sprintf("%.1fx", roas_total), "helvetica bold",
                    p.table_fontsize_body, :black, :mid, :left))
-    annotate!(pl, 0.2, pl_max * 1.05,
+    annotate!(0.2, pl_max * 1.05,
               text("Uplift (AVG): " * @sprintf("%.1f", uplift_delta) * " / " *
                    pct_formatter1f(uplift_perc),
                    "helvetica bold", p.table_fontsize_body, :black, :mid, :left))
 
     # Plot labels
     let prev_ = extract_effect_raw(effect_prev), optim_ = extract_effect_raw(effect_optim)
-        annotate!(pl, 0.5, prev_ * 1.05,
+        annotate!(0.5, prev_ * 1.05,
                   text(float_formatter1f(prev_), p.table_fontsize_body, :black, :bottom,
                        :center))
-        annotate!(pl, 1.5, optim_ * 1.05,
+        annotate!(1.5, optim_ * 1.05,
                   text(float_formatter1f(optim_), p.table_fontsize_body, :black, :bottom,
                        :center))
     end
@@ -306,13 +307,13 @@ function plot_optimized_uplift_histogram(revenue_uplift, p)
     uplift_std = std(revenue_uplift)
 
     # Summary
-    annotate!(pl, 0, 0, text("", "helvetica bold", 10, :black, :top, :left))
-    # annotate!(pl,0,pl_max*1.2,text("Period: $(optim_start) - $(optim_end)","helvetica bold",10,:black,:top,:left))
-    annotate!(pl, ymin, pl_max * 1.15,
+    annotate!(0, 0, text("", "helvetica bold", 10, :black, :top, :left))
+    # annotate!(0,pl_max*1.2,text("Period: $(optim_start) - $(optim_end)","helvetica bold",10,:black,:top,:left))
+    annotate!(ymin, pl_max * 1.15,
               text("Uplift AVG: " * float_formatter1f(uplift_avg) * " / StDev: " *
                    float_formatter1f(uplift_std),
                    "helvetica bold", p.table_fontsize_body, :black, :mid, :left))
-    annotate!(pl, ymin, pl_max * 1.1,
+    annotate!(ymin, pl_max * 1.1,
               text("Percentage of profitable scenarios: " *
                    pct_formatter1f(mean(revenue_uplift .> 0)),
                    "helvetica bold", p.table_fontsize_body, :black, :mid, :left))

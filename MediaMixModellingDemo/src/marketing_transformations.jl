@@ -77,13 +77,23 @@ end
 #     return exp(-(x/λ)^k)
 # end;
 
-# https://www.physiologyweb.com/calculators/hill_equation_interactive_graph.html
-function hill_curve(x, half_max_conc, hill_coef)
-    return x^hill_coef / (half_max_conc^hill_coef + x^hill_coef)
+"""
+    hill_curve(x, half_max_concentration_point, hill_coef)
+
+Hill Curve-based spend saturation based on:
+https://www.physiologyweb.com/calculators/hill_equation_interactive_graph.html
+"""
+function hill_curve(x, half_max_concentration_point, hill_coef)
+    return x^hill_coef / (half_max_concentration_point^hill_coef + x^hill_coef)
 end;
 
-# safe implementation for Forwarddiff/small numeric inputs
-function hill_curve(x, half_max_conc, hill_coef, ::Val{:safe})
+"""
+    hill_curve(x, half_max_concentration_point, hill_coef,::Val{:safe})
+    
+Hill Curve-based spend saturation.
+Safe implementation that works better with ForwardDiff
+"""
+function hill_curve(x, half_max_concentration_point, hill_coef, ::Val{:safe})
     return exp(hill_coef * log(x)) /
-           (exp(hill_coef * log(half_max_conc)) + exp(hill_coef * log(x)))
+           (exp(hill_coef * log(half_max_concentration_point)) + exp(hill_coef * log(x)))
 end;

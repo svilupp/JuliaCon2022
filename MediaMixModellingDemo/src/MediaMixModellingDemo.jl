@@ -34,14 +34,23 @@ include("feature_engineering.jl")
 export geometric_decay, hill_curve
 include("marketing_transformations.jl")
 
-export ParamsStage1, model_stage1a, ParamsStage2, model_stage2a, quick_nuts_diagnostics
+export ParamsStage1, set_priors_stage1_trendline, set_priors_auto_scales,
+       sanity_check_priors
+export model_stage1a, model_stage1b
+export ParamsStage2, decay_rates_types_dictionary, set_priors_stage2_decay_rates,
+       set_priors_stage2_hill_curves
+export to_masked_matrix, quick_nuts_diagnostics
+export model_stage2a, model_stage2b
 include("model_definition.jl")
+
+export plot_priors_decay_rate
+include("model_plots.jl")
 
 export pseudor2, rmse, nrmse
 include("evaluation_stats.jl")
 
-export sum_columns, percentage_share, getflatsamples
-export calc_roas_total, calc_roas, calc_mroas, saturate_adspend
+export sum_columns, percentage_share, getflatsamples, mean_fitted_effects
+export calc_roas, calc_mroas, saturate_adspend
 include("evaluation_calculations.jl")
 
 export ParamsPlot, prettify_labels
@@ -53,7 +62,8 @@ export plot_optimized_spend_share_comparison, plot_optimized_contribution,
 export plot_optimization_one_pager
 include("evaluation_plots.jl")
 
-export generate_objective_func, simulate_revenues_summed, workflow_budget_to_simulation
+export generate_objective_func, threaded_objective_func, simulate_revenues_summed,
+       workflow_budget_to_simulation
 include("budget_optimization.jl")
 
 end # Module End
