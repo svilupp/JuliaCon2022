@@ -14,6 +14,7 @@ To be updated...
 - How to set priors for all else
     - Talk to the subject matter experts in your business on what a realistic range of values would be (on the overall modelled quantity / for the implied dynamic). If it's hard to judge, ask them for what values would be impossible, which gives you edges for your prior distributions. If possible, ask them to also give you a sense how quite the likelihood of different values goes up or down within the range (good exercise is to ask them to stack PET bottle caps or post-it note packs to representive the relative likelihood of different values)
     - Once you know some boundary values and the relative shape, play with `plot()` and various distributions to achieve the desired fit, eg, `plot(Beta(10,10))` and visually inspect if it matches the provided knowledge
+    - To help you with the process, there are some utility functions (see the Demo notebook)
 - How to fit
     - Discussion on 1 vs 2 stages...(TBU)
     - Excellent paper on [Bayesian workflow](http://www.stat.columbia.edu/~gelman/research/unpublished/Bayesian_Workflow_article.pdf)
