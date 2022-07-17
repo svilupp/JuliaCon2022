@@ -3,12 +3,12 @@ using Printf: @sprintf
 using Formatting: printfmtln
 
 """
-    function plot_periodogram(input_arr) 
+    function plot_periodogram(input_arr,top_k) 
 
 Plot Fourier transform coefficients to uncover the most prominent frequencies / seasonalities
 Assumes equally spaced data points
 Looks only for periods that have seen at least 2 full cycles (ie, `size ÷ 2` at maximum!)
-Shows top-k values
+Shows `top-k` values
 
 # Example
 p=10 # period is 10
