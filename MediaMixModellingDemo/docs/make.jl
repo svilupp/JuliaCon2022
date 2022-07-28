@@ -17,7 +17,7 @@ makedocs(;
          pages = [
              "Home" => "index.md",
              "Methodology" => "methodology.md",
-             "Examples" => ["Demo - High-level API" => "demo-high-level.md"],
+            #  "Examples" => ["Demo - High-level API" => "demo-high-level.md"],
              "Practical Tips" => "practical_tips.md",
              "Resources" => "resources.md",
              "API Reference" => "api_reference.md",
