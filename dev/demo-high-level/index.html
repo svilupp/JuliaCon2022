@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>JuliaCon - MMM Demo · MediaMixModellingDemo.jl</title><script data-outdated-warner src="../assets/warner.js"></script><link rel="canonical" href="https://svilupp.github.io/MediaMixModellingDemo.jl/demo-high-level/"/><link href="https://cdnjs.cloudflare.com/ajax/libs/lato-font/3.0.0/css/lato-font.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/juliamono/0.045/juliamono.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.13.24/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL=".."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="../assets/documenter.js"></script><script src="../siteinfo.js"></script><script src="../../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/documenter-dark.css" data-theme-name="documenter-dark" data-theme-primary-dark/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="../assets/themeswap.js"></script></head><body><div id="documenter"><nav class="docs-sidebar"><div class="docs-package-name"><span class="docs-autofit"><a href="../">MediaMixModellingDemo.jl</a></span></div><form class="docs-search" action="../search/"><input class="docs-search-query" id="documenter-search-query" name="q" type="text" placeholder="Search docs"/></form><ul class="docs-menu"><li><a class="tocitem" href="../">Home</a></li><li><a class="tocitem" href="../methodology/">Methodology</a></li><li><a class="tocitem" href="../practical_tips/">Practical Tips</a></li><li><a class="tocitem" href="../resources/">Resources</a></li><li><a class="tocitem" href="../api_reference/">API Reference</a></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><nav class="breadcrumb"><ul class="is-hidden-mobile"><li class="is-active"><a href>JuliaCon - MMM Demo</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>JuliaCon - MMM Demo</a></li></ul></nav><div class="docs-right"><a class="docs-settings-button fas fa-cog" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-sidebar-button fa fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a></div></header><article class="content" id="documenter-page"><h1 id="JuliaCon-MMM-Demo"><a class="docs-heading-anchor" href="#JuliaCon-MMM-Demo">JuliaCon - MMM Demo</a><a id="JuliaCon-MMM-Demo-1"></a><a class="docs-heading-anchor-permalink" href="#JuliaCon-MMM-Demo" title="Permalink"></a></h1><p>Example application of Media Mix Modelling to optimize marketing spend</p><p>High-level workflow:</p><ul><li>Input and transform data<ul><li>Provide column names of the corresponding to groups of variables (eg, <code>cols_spend</code> for Adspend variables to be modelled)</li><li>Variables that can have positive-only effects will be standardized to 0-1 range</li><li>Variables with any-signed effects will be at least standardized via Z-Score</li></ul></li><li>Set priors / conversion factors<ul><li>Ie, use your domain knowledge to set realistic marketing transforms&#39; parameters</li></ul></li><li>Stage 1: Fit the trend<ul><li>Extract separate series for growth trend, seasonality, holidays, organic variables</li></ul></li><li>Stage 2: Fit the coefficients for marketing transformation<ul><li>Validate the fit (Rhat, traceplots, etc)</li></ul></li><li>Quantify the contributions + ROAS of the current marketing spend</li><li>Optimize the marketing budget to maximize the marketing contribution<ul><li>Define a loss function that reflects your business&#39; decision-making process</li><li>Evaluate the results of the optimization + inherent uncertainty</li></ul></li></ul><p>For more details on the methodology and practical tips visit <a href="https://svilupp.github.io/JuliaCon2022/dev/">MMM Demo Docs</a></p><pre><code class="language- hljs">using Pkg; Pkg.activate(&quot;.&quot;);
+
+import Optim
+import Metaheuristics
+
+using Logging
+#### Optional: disable logging
+# disable_logging(Logging.Info);
+import DisplayAs
+
+using MediaMixModellingDemo
+# MMMDemo reexports: Turing,DataFramesMeta,Distributions,TableTransforms,Plots,StatsPlots
+
+# Optional for better display:
+ENV[&quot;LINES&quot;]=200
+ENV[&quot;COLUMNS&quot;]=600
+Threads.nthreads();
+nothing #hide</code></pre><h2 id="Generate"><a class="docs-heading-anchor" href="#Generate">Generate</a><a id="Generate-1"></a><a class="docs-heading-anchor-permalink" href="#Generate" title="Permalink"></a></h2><p>Let&#39;s generate some example data where we know &quot;truth&quot;, so we can test this implementation</p><p>You can see the &quot;truth&quot; if you have logging enabled for level INFO</p><pre><code class="language- hljs">Y,X,col_names=create_dataset(&quot;2020-02-01&quot;,105,0);
+
+# Let&#39;s apply standard notation of df being the source of data
+df=X
+df[!,:revenue]=vec(sum.(eachrow(Y)));
+
+img=plot(df.revenue)
+img=DisplayAs.PNG(img) # trick for Literate.jl</code></pre><h1 id="Modelling"><a class="docs-heading-anchor" href="#Modelling">Modelling</a><a id="Modelling-1"></a><a class="docs-heading-anchor-permalink" href="#Modelling" title="Permalink"></a></h1><p>We will fit the model in 2 stages to deal with the under-specification.</p><p>As a convention the deterministic location of the observed variable (mean of the RV <code>y</code>) will be called <code>mu</code> and its components will be all prefixed as such, eg,</p><ul><li><code>mu_trend</code> for the trend component,</li><li><code>mu_seas</code> for the seasonality component,</li><li><code>mu_hols</code> for the holidays component,</li><li><code>mu_context</code> for the contributions of the contextual variables,</li><li><code>mu_org</code></li><li><code>mu_spend</code> for the contribution of all Ad spend variables together</li><li><code>mu_spend_by_var</code> for the contributions of each individual spend variables (ie, number of columns = number of Ad spend variables)</li></ul><p>(See <code>src/model_definition.jl</code> for more details)</p><p>All these deterministic components will be exposed by DynamicPPL in the return statement to be easily extracted via <code>generated_quantities()</code> conditioned on fitted samples (a <code>chains</code> object). In other words, given a model fit, we can easily extract all the above components by playing the samples through the model.</p><p>Let&#39;s choose what model implementation we want:</p><pre><code class="language- hljs"># Model used in stage1
+const MODEL_NAME_PREFIT=&quot;model_stage1a&quot;
+model_func_stage1=getfield(MediaMixModellingDemo,Symbol(MODEL_NAME_PREFIT))
+
+# Model used in stage2
+const MODEL_NAME=&quot;model_stage2a&quot;
+model_func_stage2=getfield(MediaMixModellingDemo,Symbol(MODEL_NAME))
+
+# Modifier of chart titles
+const EXPERIMENT_NAME=&quot; JuliaCon&quot;
+pplot=ParamsPlot(title_suffix=EXPERIMENT_NAME)
+;
+nothing #hide</code></pre><h2 id="Data"><a class="docs-heading-anchor" href="#Data">Data</a><a id="Data-1"></a><a class="docs-heading-anchor-permalink" href="#Data" title="Permalink"></a></h2><p>Let&#39;s identify seasonalities in our data (for trend modelling)</p><p>Pick the ones with the highest value (usually only 1 or 2 max)</p><pre><code class="language- hljs"># what&#39;s the seasonality
+img=plot_periodogram(df.revenue .- mean(df.revenue),3)
+img=DisplayAs.PNG(img) # trick for Literate.jl</code></pre><p>Let&#39;s build our input data object:</p><pre><code class="language-julia hljs">@doc build_inputs</code></pre><div class="markdown"><p>No documentation found.</p>
+<p>Binding <code>Main.__atexample__named__1-demo-high-level.build_inputs</code> does not exist.</p>
+</div><pre><code class="language- hljs">inputs=build_inputs(df;
+    col_target=&quot;revenue&quot;,col_datetime=&quot;dt&quot;,col_time_std=&quot;time_std&quot;,col_cat=&quot;events&quot;,
+    cols_context=[c for c in col_names.cols_context if c!=&quot;newsletters&quot;],
+    cols_organic=[&quot;newsletters&quot;],
+    cols_hols=[&quot;hols_ind&quot;],
+    cols_spend=col_names.cols_spend,
+    seasonality_periods=[4.],
+    spline_degree=0
+);
+nothing #hide</code></pre><h2 id="Stage-1-Prophet-like-model"><a class="docs-heading-anchor" href="#Stage-1-Prophet-like-model">Stage 1 - Prophet-like model</a><a id="Stage-1-Prophet-like-model-1"></a><a class="docs-heading-anchor-permalink" href="#Stage-1-Prophet-like-model" title="Permalink"></a></h2><p>Let&#39;s fit a model to the trend, seasonality and holidays</p><p>Note: We do not adstock/saturate the marketing spend at this stage</p><pre><code class="language- hljs">p1=set_priors(
+    ParamsStage1(
+        model_name=Val(Symbol(MODEL_NAME_PREFIT)),
+        scales_trend=0.2,
+        scales_hols=0.3,
+        scales_noise=0.2,
+        cat_levels=1
+    ),
+    inputs
+);
+nothing #hide</code></pre><h3 id="Fit"><a class="docs-heading-anchor" href="#Fit">Fit</a><a id="Fit-1"></a><a class="docs-heading-anchor-permalink" href="#Fit" title="Permalink"></a></h3><pre><code class="language- hljs">stage1fit=fit(inputs,p1,model_func_stage1,NUTS(300,0.65;max_depth=10));
+nothing #hide</code></pre><pre><code class="language-julia hljs"># Optional: Check the priors used and if they are sensible
+# y_prior=mapreduce(x-&gt;rand(stage1fit.model).y,hcat,1:100)|&gt;vec
+# plot_prior_predictive_histogram(inputs.y_std,y_prior,ParamsPlot())</code></pre><pre><code class="language- hljs">img=plot_model_fit_by_period(inputs.y_std,predict(stage1fit),ParamsPlot())
+img=DisplayAs.PNG(img) # trick for Literate.jl</code></pre><h2 id="Stage-2-Fit-the-Marketing-Drivers"><a class="docs-heading-anchor" href="#Stage-2-Fit-the-Marketing-Drivers">Stage 2 - Fit the Marketing Drivers</a><a id="Stage-2-Fit-the-Marketing-Drivers-1"></a><a class="docs-heading-anchor-permalink" href="#Stage-2-Fit-the-Marketing-Drivers" title="Permalink"></a></h2><p>Let&#39;s use the fit from the first stage and focus mostly on the marketing variables (including their adstock/saturation transformations)</p><pre><code class="language- hljs">img=plot_model_fit_by_period(inputs.y_std,sum(stage1fit.stage1_fitted_trends,dims=2)|&gt;vec,
+    ParamsPlot(title_suffix=&quot; for the Trend Components&quot;))
+img=DisplayAs.PNG(img) # trick for Literate.jl</code></pre><h3 id="Fit-2"><a class="docs-heading-anchor" href="#Fit-2">Fit</a><a class="docs-heading-anchor-permalink" href="#Fit-2" title="Permalink"></a></h3><pre><code class="language- hljs">p2=set_priors(
+    ParamsStage2(
+        model_name=Val(Symbol(MODEL_NAME)),
+        scales_trend_offset=0.3,
+        scales_trend=0.2,
+        scales_noise=0.3,
+    ),
+    inputs
+);
+# quick check of decay_rate priors
+p2 = set_priors_stage2_decay_rates([&quot;digital&quot;,&quot;tv&quot;,&quot;digital&quot;],decay_rates_types_dictionary,
+    p2,inputs.cols_spend)
+
+# let&#39;s check if our priors make sense given te data
+sanity_check_priors(p2;inputs.X_spend,inputs.X_context,inputs.X_org);
+
+# let&#39;s visualize the selected decay rates
+img=plot_priors_decay_rate(p2,inputs.cols_spend)
+img=DisplayAs.PNG(img) # trick for Literate.jl</code></pre><pre><code class="language- hljs">stage2fit=fit(inputs,stage1fit,p2,model_func_stage2,
+    NUTS(300,0.65;max_depth=10);
+    mcmc_samples=250,mcmc_chains=4);
+nothing #hide</code></pre><pre><code class="language-julia hljs"># Optional1: Check the priors used and if they are sensible
+# y_prior=mapreduce(x-&gt;rand(stage1fit.model).y,hcat,1:100)|&gt;vec
+# plot_prior_predictive_histogram(inputs.y_std,y_prior,ParamsPlot())
+
+## Optional2: Show the posterior samples of quantities of interest
+# stage2fit.chain
+
+## Optional3: Diagnostics if the parameter space has been properly explored
+# corner(chain[[namesingroup(stage2fit.chain,&quot;slope&quot;)...,
+#             namesingroup(stage2fit.chain,&quot;decay_rate&quot;)...]],
+#     guidefontsize=8,size=(1000,1000))
+
+# corner(chain[[namesingroup(chain,&quot;slope&quot;)...,
+# namesingroup(chain,&quot;beta_spend&quot;)...,Symbol(&quot;beta_org[1]&quot;)]],
+#     guidefontsize=8,size=(1000,1000))
+
+# Optional4: Diagnostics of the mixing in the chains
+# Display traceplots -- look for &quot;fuzzy caterpillars&quot;! Any flat lines (ie, chain getting stuck on some values) indicate problems!
+# plot(chain)</code></pre><h2 id="Evaluation"><a class="docs-heading-anchor" href="#Evaluation">Evaluation</a><a id="Evaluation-1"></a><a class="docs-heading-anchor-permalink" href="#Evaluation" title="Permalink"></a></h2><pre><code class="language- hljs">img=plot(stage2fit,inputs,pplot)
+img=DisplayAs.PNG(img) # trick for Literate.jl
+#### optional: save the chart
+# savefig(pl,joinpath(pwd(),&quot;exports&quot;,&quot;mmm-1pager-$(pplot.title_suffix).png&quot;))</code></pre><h1 id="Optimization"><a class="docs-heading-anchor" href="#Optimization">Optimization</a><a id="Optimization-1"></a><a class="docs-heading-anchor-permalink" href="#Optimization" title="Permalink"></a></h1><p>Let&#39;s optimize the marketing budget, ie, let&#39;s find out by what factor should we increase/decrease our spend on each marketing channel/activity without spending more money overall</p><h2 id="Metaheuristics-loop"><a class="docs-heading-anchor" href="#Metaheuristics-loop">Metaheuristics loop</a><a id="Metaheuristics-loop-1"></a><a class="docs-heading-anchor-permalink" href="#Metaheuristics-loop" title="Permalink"></a></h2><pre><code class="language- hljs">###### Metaheuristics Options (runs ECA algorithm under the hood)
+# time_limit is in seconds
+# debug = true if you want to see each iteration
+# parallel_evaluation = true if you have batch-enabled objective function (see docs for `threaded_objective_func`)
+metaheuristics_options = Metaheuristics.Options(time_limit=60.,debug=false,parallel_evaluation=true)
+optimalbudget=optimize(stage2fit,inputs;metaheuristics_options);
+
+# quick sanity check
+sanity_check_optimum(optimalbudget,stage2fit,inputs);
+nothing #hide</code></pre><h2 id="Pager"><a class="docs-heading-anchor" href="#Pager">1-Pager</a><a id="Pager-1"></a><a class="docs-heading-anchor-permalink" href="#Pager" title="Permalink"></a></h2><pre><code class="language- hljs">img=plot(optimalbudget,stage2fit,inputs,pplot)
+img=DisplayAs.PNG(img) # trick for Literate.jl
+#### optional: save the chart
+# savefig(pl,joinpath(pwd(),&quot;exports&quot;,&quot;optimization-1pager-$(pplot.title_suffix).png&quot;))</code></pre><h1 id="END"><a class="docs-heading-anchor" href="#END">END</a><a id="END-1"></a><a class="docs-heading-anchor-permalink" href="#END" title="Permalink"></a></h1><hr/><p><em>This page was generated using <a href="https://github.com/fredrikekre/Literate.jl">Literate.jl</a>.</em></p></article><nav class="docs-footer"><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 0.27.22 on <span class="colophon-date" title="Thursday 28 July 2022 20:53">Thursday 28 July 2022</span>. Using Julia version 1.7.3.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
