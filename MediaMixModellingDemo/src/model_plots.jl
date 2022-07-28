@@ -3,7 +3,7 @@
 
 Plots priors for decay rate in terms of Beta distributions
 
-Example: 
+Example:
 ```
 p2=ParamsStage2()
 cols_spend=nothing # available from data prep

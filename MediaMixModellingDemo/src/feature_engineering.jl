@@ -3,7 +3,7 @@ using Printf: @sprintf
 using Formatting: printfmtln
 
 """
-    function plot_periodogram(input_arr,top_k) 
+    function plot_periodogram(input_arr,top_k)
 
 Plot Fourier transform coefficients to uncover the most prominent frequencies / seasonalities
 Assumes equally spaced data points
@@ -68,7 +68,7 @@ end
     generate_seasonality_features(t, p=365.25, n=5)
 
 Generates seasonality features given an array of tuples in a format (period,degree)
-Eg, 7-day period of degree 3 would be 
+Eg, 7-day period of degree 3 would be
 
 Expects t to be a time index series
 
