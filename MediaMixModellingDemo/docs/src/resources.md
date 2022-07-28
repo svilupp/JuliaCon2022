@@ -4,10 +4,12 @@
 - [Marketing Mix Modeling (MMM) – Concepts and Model Interpretation] (https://www.ijert.org/marketing-mix-modeling-mmm-concepts-and-model-interpretation)
 - Light introduction to [Adstock from FastCompany](https://www.fastcompany.com/1665084/how-long-does-your-ad-have-impact)
 ## Industry 
-- Google: [Bayesian Methods for Media Mix Modeling with Carryover and Shape effects](https://static.googleusercontent.com/media/research.google.com/en//pubs/archive/46001.pdf)
-- Google: [Challenges and opportunities in Media Mix Modelling](https://research.google/pubs/pub45998/)
-- _!!CROWN JEWEL!!_ [Robyn Package](https://facebookexperimental.github.io/Robyn/) from Facebook Research team (experimental). Be careful when using the Weibull transformations (it might be fixed now). A related [tutorial](https://towardsdatascience.com/automated-marketing-mix-modeling-with-facebooks-robyn-fd79e60b489d)
-- Google: Numpyro package [Lightweight MMM](https://github.com/google/lightweight_mmm/)
+- Google:
+    - [Bayesian Methods for Media Mix Modeling with Carryover and Shape effects](https://static.googleusercontent.com/media/research.google.com/en//pubs/archive/46001.pdf)
+    - [Challenges and opportunities in Media Mix Modelling](https://research.google/pubs/pub45998/)
+    - A Numpyro-based package [Lightweight MMM](https://github.com/google/lightweight_mmm/)
+- Meta/Facebook:
+    - **!!CROWN JEWEL!!** [Robyn Package](https://facebookexperimental.github.io/Robyn/) from Facebook Research team (experimental). Be careful when using the Weibull transformations (it might be fixed now). A related [tutorial](https://towardsdatascience.com/automated-marketing-mix-modeling-with-facebooks-robyn-fd79e60b489d)
 - Hello Fresh: Tutorial for Python with PyMC3 [here](https://engineering.hellofresh.com/bayesian-media-mix-modeling-using-pymc3-for-fun-and-profit-2bd4667504e6)
 ## Frequentist MMM
 - MMM in Python with Statsmodels [here](https://blog.getcensus.com/you-should-know-introduction-to-marketing-mix-modeling/amp/)
