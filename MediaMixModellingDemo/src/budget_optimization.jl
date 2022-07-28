@@ -306,6 +306,14 @@ Base.@kwdef struct OptimalBudget
     simulations_optim::Any
 end
 
+"""
+    optimize(fitted::Stage2Fit, inputs::InputData;
+                  metaheuristics_options::Metaheuristics.Options = nothing,
+                  multiplier_bounds = nothing)
+
+
+Runs optimization loop and returns results in the struct `OptimalBudget`
+"""
 function optimize(fitted::Stage2Fit, inputs::InputData;
                   metaheuristics_options::Metaheuristics.Options = nothing,
                   multiplier_bounds = nothing)

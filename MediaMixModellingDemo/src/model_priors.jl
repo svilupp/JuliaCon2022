@@ -1,28 +1,28 @@
 """
     struct ParamsStage1
         model_name=Val(:any)
-        scales_trend_offset::Float64=0. 
+        scales_trend_offset::Float64=0.
         scales_growth_trend::Float64=1.
         scales_trend::Float64 = 0.2
         scales_hols::Float64 = 0.3
         scales_seas::AbstractArray{Float64} = ones(Float64,1)
         scales_feat::AbstractArray{Float64} = ones(Float64,1)
-        scales_noise::Float64 = 0.2 
-        cat_levels::Int = 1 
+        scales_noise::Float64 = 0.2
+        cat_levels::Int = 1
     end
 
 Holds priors and relevant parameters for Stage 1 of the modelling
 
 Arguments:
-- model_name=Val(:any) : Symbol representing the model version being fitted
-- scales_trend_offset::Float64=0. : Scale ("width") of the Normal RV `alpha` (intercepts for different groups)
-- scales_growth_trend::Float64=1. : Scale ("width") of the Normal RV `growth_trend` (trend component)
-- scales_trend::Float64 = 0.2 : Scale ("width") of the Normal RV `beta_trend` for input X_trend (flexible trend fitting, eg, with splines)
-- scales_hols::Float64 = 0.3 : Scale ("width") of the Normal RV `beta_hols` for input X_hols (holidays features)
-- scales_seas::AbstractArray{Float64} = ones(Float64,1) : Scale ("width") of the Normal RV `beta_seas` for input X_feat (seasonality components)
-- scales_feat::AbstractArray{Float64} = ones(Float64,1) : Scale ("width") of the Normal RV `beta_feat` for input X_feat (concatenated features)
-- scales_noise::Float64 = 0.2 : Extent of the random noise around deterministic trend / rate parameter of Exponential distribution for `sigma`
-- cat_levels::Int = 1 : Number of categorical levels in RV `alpha` that will be provided in X_cat vector (allows for different intercepts for different groups)
+- `model_name`=Val(:any) : Symbol representing the model version being fitted
+- `scales_trend_offset`::Float64=0. : Scale ("width") of the Normal RV `alpha` (intercepts for different groups)
+- `scales_growth_trend`::Float64=1. : Scale ("width") of the Normal RV `growth_trend` (trend component)
+- `scales_trend`::Float64 = 0.2 : Scale ("width") of the Normal RV `beta_trend` for input X_trend (flexible trend fitting, eg, with splines)
+- `scales_hols`::Float64 = 0.3 : Scale ("width") of the Normal RV `beta_hols` for input X_hols (holidays features)
+- `scales_seas`::AbstractArray{Float64} = ones(Float64,1) : Scale ("width") of the Normal RV `beta_seas` for input X_feat (seasonality components)
+- `scales_feat`::AbstractArray{Float64} = ones(Float64,1) : Scale ("width") of the Normal RV `beta_feat` for input X_feat (concatenated features)
+- `scales_noise`::Float64 = 0.2 : Extent of the random noise around deterministic trend / rate parameter of Exponential distribution for `sigma`
+- `cat_levels`::Int = 1 : Number of categorical levels in RV `alpha` that will be provided in X_cat vector (allows for different intercepts for different groups)
 
 Example:
 
@@ -161,7 +161,7 @@ end
         locs_spend_halfmaxpoint::AbstractArray{Float64} = ones(Float64,1)
         scales_spend_halfmaxpoint::AbstractArray{Float64} = ones(Float64,1)
 
-        locs_spend_beta::AbstractArray{Float64} = ones(Float64,1) 
+        locs_spend_beta::AbstractArray{Float64} = ones(Float64,1)
         scales_spend_beta::AbstractArray{Float64} = ones(Float64,1)
         units_ratio_spend_to_y::AbstractArray{Float64} = ones(Float64,1)
         factor_to_roas_of_one::AbstractArray{Float64} = units_ratio_spend_to_y .* 2
@@ -172,22 +172,22 @@ Holds priors and relevant parameters for Stage 2 of the modelling
 For easy set up, use utility functions that build it from the inputs
 
 Arguments:
-- model_name=Val(:any) : Symbol representing the model version being fitted
-- scales_trend_offset::Float64=0. : Scale ("width") of the Normal RV `alpha` (intercepts for different groups)
-- scales_trend::Float64 = 0.2 : Scale ("width") of the Normal RV `beta_trend` for input X_trend (flexible trend fitting, eg, with splines)
-- scales_noise::Float64 = 0.2 : Extent of the random noise around deterministic trend / rate parameter of Exponential distribution for `sigma`
-- scales_context::AbstractArray{Float64} = ones(Float64,1) : Scale ("width") of the Normal RV `beta_context` for input X_context (context variables)
-- scales_org::AbstractArray{Float64} = ones(Float64,1) : Scale ("width") of the Normal RV `beta_org` for input X_feat (organic variables - can have only POSITIVE effect)
-- decay_rate_alphas::AbstractArray{Float64} = ones(Float64,1) : `decay_rate` RV is modelled by Beta distribution, `alpha` is the corresponding parameter
-- decay_rate_betas::AbstractArray{Float64} = ones(Float64,1) :  `decay_rate` RV is modelled by Beta distribution, `beta` is the corresponding parameter
-- adspend_mean_nonzero::AbstractArray{Float64} = ones(Float64,1) : Calculated quantity of the average non-zero spend (used to initialize `halfmaxpoint`)
-- adspend_median::AbstractArray{Float64} = ones(Float64,1) : Calculated quantity of median of the spend
-- locs_spend_halfmaxpoint::AbstractArray{Float64} = ones(Float64,1) : Center of the Normal RV `halfmaxpoint` for the halfmax concentration point in Hill Curve (can be initiated by average of the non-zero spend)
-- scales_spend_halfmaxpoint::AbstractArray{Float64} = ones(Float64,1) :  Scale ("width") of the Normal RV `halfmaxpoint` for the halfmax concentration point in Hill Curve
-- locs_spend_beta::AbstractArray{Float64} = ones(Float64,1) : Center of the Normal RV 'beta_spend' that represents the ROAS when the ad spend is at `halfmaxpoint`
-- scales_spend_beta::AbstractArray{Float64} = ones(Float64,1) : Scale ("width") of the Normal RV 'beta_spend' that represents the ROAS when the ad spend is at `halfmaxpoint` 
-- units_ratio_spend_to_y::AbstractArray{Float64} = ones(Float64,1) : Ratio of ad spend to Y to be able to convert unit effect (used for `factor_to_roas_of_one`)
-- factor_to_roas_of_one::AbstractArray{Float64} : Conversion factor that ensures that provided `beta_spend` represents the ROAS when the ad spend is at `halfmaxpoint`
+- `model_name`=Val(:any) : Symbol representing the model version being fitted
+- `scales_trend_offset`::Float64=0. : Scale ("width") of the Normal RV `alpha` (intercepts for different groups)
+- `scales_trend`::Float64 = 0.2 : Scale ("width") of the Normal RV `beta_trend` for input X_trend (flexible trend fitting, eg, with splines)
+- `scales_noise`::Float64 = 0.2 : Extent of the random noise around deterministic trend / rate parameter of Exponential distribution for `sigma`
+- `scales_context`::AbstractArray{Float64} = ones(Float64,1) : Scale ("width") of the Normal RV `beta_context` for input X_context (context variables)
+- `scales_org`::AbstractArray{Float64} = ones(Float64,1) : Scale ("width") of the Normal RV `beta_org` for input X_feat (organic variables - can have only POSITIVE effect)
+- `decay_rate_alphas`::AbstractArray{Float64} = ones(Float64,1) : `decay_rate` RV is modelled by Beta distribution, `alpha` is the corresponding parameter
+- `decay_rate_betas`::AbstractArray{Float64} = ones(Float64,1) :  `decay_rate` RV is modelled by Beta distribution, `beta` is the corresponding parameter
+- `adspend_mean_nonzero`::AbstractArray{Float64} = ones(Float64,1) : Calculated quantity of the average non-zero spend (used to initialize `halfmaxpoint`)
+- `adspend_median`::AbstractArray{Float64} = ones(Float64,1) : Calculated quantity of median of the spend
+- `locs_spend_halfmaxpoint`::AbstractArray{Float64} = ones(Float64,1) : Center of the Normal RV `halfmaxpoint` for the halfmax concentration point in Hill Curve (can be initiated by average of the non-zero spend)
+- `scales_spend_halfmaxpoint`::AbstractArray{Float64} = ones(Float64,1) :  Scale ("width") of the Normal RV `halfmaxpoint` for the halfmax concentration point in Hill Curve
+- `locs_spend_beta`::AbstractArray{Float64} = ones(Float64,1) : Center of the Normal RV 'beta_spend' that represents the ROAS when the ad spend is at `halfmaxpoint`
+- `scales_spend_beta`::AbstractArray{Float64} = ones(Float64,1) : Scale ("width") of the Normal RV 'beta_spend' that represents the ROAS when the ad spend is at `halfmaxpoint`
+- `units_ratio_spend_to_y`::AbstractArray{Float64} = ones(Float64,1) : Ratio of ad spend to Y to be able to convert unit effect (used for `factor_to_roas_of_one`)
+- `factor_to_roas_of_one`::AbstractArray{Float64} : Conversion factor that ensures that provided `beta_spend` represents the ROAS when the ad spend is at `halfmaxpoint`
 
 Example:
 ```
@@ -250,7 +250,7 @@ function set_priors_stage2_hill_curves(X_spend, existing_params = ParamsStage2()
     # Default: allow for 3*0.3 movement around that (truncated to 0.1 - 1. range in model_stage2a)
     scales_spend_halfmaxpoint = halfmaxpoint_scale .* ones(size(X_spend, 2))
 
-    # Expected ROAS at the halfmax concentration point 
+    # Expected ROAS at the halfmax concentration point
     # Note that model_stage2a truncates to 0-5 range!
     locs_spend_beta = expected_roas .* ones(size(X_spend, 2))
     scales_spend_beta = expected_roas_scale .* ones(size(X_spend, 2))
@@ -277,7 +277,7 @@ function set_priors_stage2_hill_curves(X_spend, existing_params = ParamsStage2()
 end
 
 # "Some rule of thumb estimates we have found from historically building weekly-level models are that
-# TV has tended to have adstock between 0.3 - 0.8, OOH/Print/Radio has had 0.1-0.4, and Digital has had 0.0 - 0.3. 
+# TV has tended to have adstock between 0.3 - 0.8, OOH/Print/Radio has had 0.1-0.4, and Digital has had 0.0 - 0.3.
 # This is anecdotal advice so please use your best judgement when building your own models."
 # Source: https://facebookexperimental.github.io/Robyn/docs/features
 decay_rates_types_dictionary = Dict("vague" => Beta(2, 2),
@@ -293,7 +293,7 @@ decay_rates_types_dictionary = Dict("vague" => Beta(2, 2),
         decay_rates_types_dictionary::Dict=decay_rates_types_dictionary,
         existing_params=ParamsStage2(),var_names=nothing)
 
-Sets decay rates priors (for Beta distribution) as a dictionary lookup 
+Sets decay rates priors (for Beta distribution) as a dictionary lookup
  of different options available in `decay_rates_types_dictionary` (eg, "tv", "digital")
 
 Example:

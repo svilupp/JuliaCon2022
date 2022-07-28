@@ -13,7 +13,7 @@ percentage_share(x) = x ./ sum(x)
 """
     getflatsamples(chain,groupname)
 
-Extract a group of variables under name `groupname` from `chain` 
+Extract a group of variables under name `groupname` from `chain`
  and flattens all samples into the first dimension
  ie, outputs a dimension: (num_samples*num_chains,num_variables)
 """
@@ -69,7 +69,7 @@ end
 
 """
     calc_roas(effects::AbstractArray, spends::AbstractArray, factors_spend_to_effect::AbstractArray,weights::AbstractArray)
-    
+
 Calculates Total ROAS (of all Ad channels) as a weighted-average of individual ROAS' weighted by the raw spend
 """
 function calc_roas(effects::AbstractArray, spends::AbstractArray,
@@ -81,10 +81,10 @@ end
 """
     calc_mroas(x::Number, delta::Number, chain::AbstractMCMC.AbstractChains, p, slice_idx::Int)
 
-Calculate marginal ROAS (mROAS) at a given point `x` with a `delta` (=step size) for a variable under `slice_idx` 
+Calculate marginal ROAS (mROAS) at a given point `x` with a `delta` (=step size) for a variable under `slice_idx`
  (ie, 3rd channel would have `slice_idx=3`)
 
-Example: 
+Example:
 Calculate mROAS for all Ad spend variables with `delta=0.01`
 ```
 # p2=ParamsStage2() # model parameters from stage 2

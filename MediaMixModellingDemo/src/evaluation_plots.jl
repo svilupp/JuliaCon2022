@@ -1,6 +1,25 @@
 using ShiftedArrays: lag
 
 # Parameters
+"""
+    struct ParamsPlot
+        title_suffix = ""
+        color_spend = palette(:default)[6]
+        color_spend_optimized = palette(:default)[6]
+        color_revenues = palette(:default)[1]
+        color_revenues_original = palette(:default)[2]
+        units_revenues = "USD"
+        units_spend = "USD"
+        title_fontsize = 10
+        table_fontsize_header = 10
+        table_fontsize_body = 8
+        output_dpi = 150
+        output_size_mmm = (1000, 800)
+        output_size_optim = (1000, 800)
+    end
+
+Holds plotting defaults
+"""
 @with_kw struct ParamsPlot
     title_suffix = ""
     color_spend = palette(:default)[6]
@@ -33,7 +52,11 @@ function plot_prior_predictive_histogram(y_true, y_prior, p)
     return pl
 end
 
-# Comparison of modelled revenues vs actuals
+"""
+    plot_model_fit_by_period(y_true, y_pred, p)
+
+Create a plot comparing the modelled revenues(`y_pred`) vs actuals (`y_true`)
+"""
 function plot_model_fit_by_period(y_true, y_pred, p)
     plt_max = max(maximum(y_true), maximum(y_pred))
     annotation_points = [(0, plt_max), (0, plt_max * 0.95), (0, plt_max * 0.9)]
@@ -59,7 +82,11 @@ function plot_model_fit_by_period(y_true, y_pred, p)
     return pl
 end
 
-# Waterfall plot to show % contributions to fitted revenues (no-noise! only deterministic components)
+"""
+    plot_contributions(effect_shares, cols, p)
+
+Creates a waterfall plot to show % contributions to fitted revenues (no-noise! only deterministic components)
+"""
 function plot_contributions(effect_shares, cols, p)
 
     # Prepare data
@@ -102,8 +129,14 @@ function plot_contributions(effect_shares, cols, p)
     return pl
 end
 
-# Plot comparison between where we spend money vs effect on revenues
-# Big differences within each category (spend % vs effect %) suggest optimization opportunities
+"""
+    plot_effects_vs_spend(effect_shares, spend_shares, cols, p)
+
+Plots a comparison between where we spend money (`spend_shares`) vs effect on revenues (`effect_shares`). Expressed in relative terms (% of total)
+
+Big differences within each category (spend % vs effect %) suggest optimization opportunities
+
+"""
 function plot_effects_vs_spend(effect_shares, spend_shares, cols, p)
 
     # Create utility dataframe
@@ -141,8 +174,14 @@ function plot_effects_vs_spend(effect_shares, spend_shares, cols, p)
     return pl
 end
 
-# Quick summary table of the parameters of the response curves
-# Expects vectors of parameters - one of each channel
+"""
+    plot_response_curves_table(decay_rates, roass, mroas_at_means, cols, roas_total, p)
+
+Plot a quick summary table of the parameters of the response curves
+
+Expects vectors of parameters - one of each channel
+
+"""
 function plot_response_curves_table(decay_rates, roass, mroas_at_means, cols, roas_total, p)
     plt_labels = categorical(cols; levels = cols)
     yticks_ = (-0.5 + 1):length(cols)
@@ -182,7 +221,13 @@ function plot_response_curves_table(decay_rates, roass, mroas_at_means, cols, ro
     return pl
 end
 
-# utility function to enable gradual explanation of the MMM
+"""
+    plot_mmm_one_pager(plot_array, frame_idx::Int64, p)
+
+Combines all plots in plot array into 1 layout for MMM 1-pager
+
+Allows to reveal the plots partially, one by one (provide `frame_idx`)
+"""
 function plot_mmm_one_pager(plot_array, frame_idx::Int64, p)
     @assert frame_idx > 0
 
@@ -199,7 +244,11 @@ function plot_mmm_one_pager(plot_array, frame_idx::Int64, p)
     return pl
 end
 
-# wrapper to plot MMM 1-pager
+"""
+    Plots.plot(fitted::Stage2Fit, inputs::InputData, pplot::ParamsPlot = ParamsPlot())
+
+Wraps all computations to create MMM 1-Pager
+"""
 function Plots.plot(fitted::Stage2Fit, inputs::InputData, pplot::ParamsPlot = ParamsPlot())
 
     # TODO: fit_stage2_mask not used for plots!
@@ -285,8 +334,13 @@ end
 ###############################
 ### Optimization
 
-# Plot comparison between previous marketing spend allocation and the optimum discovered
-# Remember that differences are constrainted by the optimization settings
+"""
+    plot_optimized_spend_share_comparison(spend_share_prev, spend_share_optim, cols, p)
+
+Plots a comparison between previous marketing spend allocation and the optimum discovered
+
+Note that the differences are constrainted by the optimization settings (see `multiplier_bounds` !)
+"""
 function plot_optimized_spend_share_comparison(spend_share_prev, spend_share_optim, cols, p)
 
     # Create utility dataframe
@@ -331,6 +385,12 @@ function plot_optimized_spend_share_comparison(spend_share_prev, spend_share_opt
     return pl
 end
 
+"""
+    plot_optimized_contribution(effect_prev, effect_optim, roas_total, optim_start,
+                                     optim_end, revert_y_func, p)
+
+Plots expected delta in revenue if the new marketing budget has been implemented (on the same period)
+"""
 function plot_optimized_contribution(effect_prev, effect_optim, roas_total, optim_start,
                                      optim_end, revert_y_func, p)
 
@@ -377,7 +437,11 @@ function plot_optimized_contribution(effect_prev, effect_optim, roas_total, opti
     return pl
 end
 
-# Plot histogram of modelled uplift
+"""
+    plot_optimized_uplift_histogram(revenue_uplift, p)
+
+Plots a histogram of modelled uplift (`revenue_uplift`)
+"""
 function plot_optimized_uplift_histogram(revenue_uplift, p)
     pl = histogram(revenue_uplift,
                    title = "Modelled Revenue Uplift", bins = :sqrt,
@@ -386,7 +450,7 @@ function plot_optimized_uplift_histogram(revenue_uplift, p)
     pl_max = maximum(yticks(pl)[1][1])
     xmin = let tickvalues = xticks(pl)[1][1]
         x_step_size = (tickvalues[2] - tickvalues[1])
-        xmin = minimum(tickvalues) - 0.5 * x_step_size
+        xmin = minimum(tickvalues) - 0.0 * x_step_size
     end
     plot!(pl, ylim = (0, pl_max * 1.5))
 
@@ -412,7 +476,13 @@ function plot_optimized_uplift_histogram(revenue_uplift, p)
     return pl
 end
 
-# utility function to enable gradual explanation of the Optimization 1-pager
+"""
+    plot_optimization_one_pager(plot_array, frame_idx::Int64, p)
+
+Create a layout for Optimization 1-pager given a provided array of plots (`plot_array`)
+
+It is possible to reveal plots one by one (use `frame_idx`)
+"""
 function plot_optimization_one_pager(plot_array, frame_idx::Int64, p)
     @assert frame_idx > 0
 
@@ -428,7 +498,12 @@ function plot_optimization_one_pager(plot_array, frame_idx::Int64, p)
     return pl
 end
 
-# wrapper to plot Optimization 1-pager
+"""
+    Plots.plot(optimal::OptimalBudget, fitted::Stage2Fit, inputs::InputData,
+                    pplot::ParamsPlot = ParamsPlot())
+
+Wraps all computations required to plot the Optimization 1-pager
+"""
 function Plots.plot(optimal::OptimalBudget, fitted::Stage2Fit, inputs::InputData,
                     pplot::ParamsPlot = ParamsPlot())
     @unpack params, chain, model, generated_data = fitted
@@ -458,7 +533,7 @@ function Plots.plot(optimal::OptimalBudget, fitted::Stage2Fit, inputs::InputData
 
     ###
     # Total ROAS
-    # TO DO: in period!
+    # TODO: in period!
     roas_total = let effects = mean_fitted_effects(params.model_name, simulations_optim;
                                                    extract_keys = [:mu_spend_by_var]),
         spends = adspend_sum_trf,

@@ -345,7 +345,7 @@ end
 """
     to_masked_matrix(x::DataFrame,mask=trues(size(x,1)))
 
-Convert DataFrame to a matrix and apply a `mask` to its rows if provided
+Converts DataFrame to a matrix and applies a `mask` to its rows if provided
 """
 to_masked_matrix(x::AbstractDataFrame, mask = trues(size(x, 1))) = Matrix(x)[mask, :]
 to_masked_matrix(x::AbstractMatrix, mask = trues(size(x, 1))) = x[mask, :]
