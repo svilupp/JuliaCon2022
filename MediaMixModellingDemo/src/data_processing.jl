@@ -60,18 +60,18 @@ end
 Builds the input data object for the successing fitting & optimization
 
 Arguments:
-- col_target::String="revenue" - column name of the target/response variable (eg, revenues)
-- col_datetime::String="dt" - column name of the variable with dates
-- col_time_std::String="time_std" - column name of the standardized time index (from 0-1, strict)
-- col_cat::String="events" - column name of the categorical variable representing various events (ie not available); Set to "" if there isn't any
-- cols_context::AbstractVector{String}=String[] - column name of the context variables (eg, macroeconomic indicators, market trends, competitors sales or promotions) (variables will be standardized via Z-score); Defaults to empty if there are none
-- cols_organic::AbstractVector{String}=String[] - column name of the organic marketing activities (eg, email newsletters) (variables will be scaled to maximum=1 via Max() function and their effect on response can be only positive); Defaults to empty if there are none
+- `col_target`::String="revenue" - column name of the target/response variable (eg, revenues)
+- `col_datetime`::String="dt" - column name of the variable with dates
+- `col_time_std`::String="time_std" - column name of the standardized time index (from 0-1, strict)
+- `col_cat`::String="events" - column name of the categorical variable representing various events (ie not available); Set to "" if there isn't any
+- `cols_context`::AbstractVector{String}=String[] - column name of the context variables (eg, macroeconomic indicators, market trends, competitors sales or promotions) (variables will be standardized via Z-score); Defaults to empty if there are none
+- `cols_organic`::AbstractVector{String}=String[] - column name of the organic marketing activities (eg, email newsletters) (variables will be scaled to maximum=1 via Max() function and their effect on response can be only positive); Defaults to empty if there are none
 - cols_hols::AbstractVector{String}=String[] - column name of the holiday indicators; Defaults to empty if there are none
-- cols_spend::AbstractVector{String} - column names of the Ad spend variables that we want to model (variables will be scaled to maximum=1 via Max() function)
-- seasonality_periods::AbstractVector{Float64}=Float64[] - what seasonalities are expected in the trendline; Defaults to empty if there are none
-- spline_degree::Int=0 - if complicated trend modelling is needed, what degree of spline basis should be used (uses cubic bases splines from Splines2.jl)
-- fit_stage2_mask::AbstractVector{Bool}=trues(nrow(df)) - mask to be apllied to observed data in Stage 2 of modelling (use the observation when `=true`); Defaults to all observations being used
-- optim_mask::AbstractVector{Bool}=trues(nrow(df)) - mask to be apllied in the budget optimization (use the observation when `=true`); Defaults to all observations being used
+- `cols_spend`::AbstractVector{String} - column names of the Ad spend variables that we want to model (variables will be scaled to maximum=1 via Max() function)
+- `seasonality_periods`::AbstractVector{Float64}=Float64[] - what seasonalities are expected in the trendline; Defaults to empty if there are none
+- `spline_degree`::Int=0 - if complicated trend modelling is needed, what degree of spline basis should be used (uses cubic bases splines from Splines2.jl)
+- `fit_stage2_mask`::AbstractVector{Bool}=trues(nrow(df)) - mask to be apllied to observed data in Stage 2 of modelling (use the observation when `=true`); Defaults to all observations being used
+- `optim_mask`::AbstractVector{Bool}=trues(nrow(df)) - mask to be apllied in the budget optimization (use the observation when `=true`); Defaults to all observations being used
 """
 function build_inputs(df::AbstractDataFrame;
                       cols_spend::AbstractVector{String},

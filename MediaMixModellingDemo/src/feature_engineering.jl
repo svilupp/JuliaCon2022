@@ -11,9 +11,11 @@ Looks only for periods that have seen at least 2 full cycles (ie, `size ÷ 2` at
 Shows `top-k` values
 
 # Example
+```
 p=10 # period is 10
 y=sin.(2π/p*collect(1:20)) # generate 20 data points
 plot_periodogram(y,1) # plot periodogram, period=10 should be highlighted as maximum
+```
 """
 function plot_periodogram(input_arr, top_k = 1::Int64)
     @assert top_k >= 1
@@ -50,8 +52,9 @@ Expects t to be a time index series
 
 Returns array of shape: (size(t,1),2n)
 
-# Example
-seaso=generate_fourier_series(1:400,365.25, 5)
+Example:
+
+`seasonality_generate_fourier_series(1:400,365.25, 5)`
 
 """
 function generate_fourier_series(t, p = 365.25, n = 5)
@@ -74,8 +77,9 @@ Expects t to be a time index series
 
 Returns array of shape: (size(t,1),2n)
 
-# Example
-seaso=generate_fourier_series(1:400,365.25, 5)
+Example:
+
+`seasonality_=generate_fourier_series(1:400,365.25, 5)`
 
 """
 function generate_seasonality_features(time_index, seasonality_arr)
@@ -98,6 +102,7 @@ Max()-only transform to allow easy scaling between features and the outcome
 Uses MinMax() pipe under the hood but overwrites the minimum to be =0
 
 Example:
+
 `y_std,pipe_cache_y=standardize_by_max(select(df,target_label))`
 """
 function standardize_by_max(X)
@@ -121,6 +126,7 @@ end
 Zscore transform to center the feature to its mean value and scale it (to make it easier to set priors)
 
 Example:
+
 `y_std,pipe_cache_y=standardize_by_zscore(select(df,target_label))`
 """
 function standardize_by_zscore(X)
