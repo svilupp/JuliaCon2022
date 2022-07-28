@@ -38,7 +38,8 @@ function plot_model_fit_by_period(y_true, y_pred, p)
     plt_max = max(maximum(y_true), maximum(y_pred))
     annotation_points = [(0, plt_max), (0, plt_max * 0.95), (0, plt_max * 0.9)]
 
-    pl = plot(y_true, title = "Quality of Model Fit", titlefontsize = p.title_fontsize,
+    pl = plot(y_true, title = "Quality of Model Fit" * p.title_suffix,
+              titlefontsize = p.title_fontsize,
               label = "Actuals", color = p.color_revenues_original)
     plot!(pl, y_pred, label = "Fitted",
           color = p.color_revenues,
@@ -198,6 +199,89 @@ function plot_mmm_one_pager(plot_array, frame_idx::Int64, p)
     return pl
 end
 
+# wrapper to plot MMM 1-pager
+function Plots.plot(fitted::Stage2Fit, inputs::InputData, pplot::ParamsPlot = ParamsPlot())
+
+    # TODO: fit_stage2_mask not used for plots!
+
+    @unpack params, generated_data, model, chain = fitted
+    @unpack y_std, cols_spend, X_spend = inputs
+
+    adspend_sum_trf = X_spend |> sum_columns
+    adspend_sum_raw = inputs.revert_pipe_spend(X_spend) |> sum_columns
+
+    # Header
+    pl0 = plot(title = "MMM 1-Pager " * pplot.title_suffix, grid = false, showaxis = false,
+               ticks = false, bottom_margin = -0Plots.px)
+
+    ### PLOT 1
+    y_pred = predict(fitted)
+    # overwrite title suffix not to show the same thing twice
+    pl1 = plot_model_fit_by_period(y_std, y_pred, ParamsPlot(pplot, title_suffix = ""))
+
+    ### PLOT 2
+    pl2 = let effect_share_mean = mean_fitted_effects(params.model_name, generated_data;
+                                                      extract_keys = [
+                                                          :mu_trend,
+                                                          :mu_org,
+                                                          :mu_context,
+                                                          :mu_spend_by_var,
+                                                      ]),
+        cols = ["Trend", "Organic", "Context", cols_spend...] .|> prettify_labels
+
+        plot_contributions(effect_share_mean, cols, pplot)
+    end
+
+    ### PLOT 3
+    # extract fitted geometric decay rates
+    decay_rates = getflatsamples(chain, "decay_rate") |> x -> mean(x, dims = 1) |> vec
+    # calculate roas across the whole period
+    roass = let effects = mean_fitted_effects(params.model_name, generated_data;
+                                              extract_keys = [:mu_spend_by_var]),
+        spends = adspend_sum_trf,
+        factors = params.units_ratio_spend_to_y
+
+        calc_roas.(effects, spends, factors)
+    end
+    # calculate mroas at mean spend of each variable with delta of 0.01
+    mroas_at_means = [calc_mroas(params.adspend_mean_nonzero[idx], 0.01, chain, params,
+                                 idx)[1] for idx in 1:length(cols_spend)]
+
+    # Total ROAS (depends on model2b used)
+    roas_total = let effects = mean_fitted_effects(params.model_name, generated_data;
+                                                   extract_keys = [:mu_spend_by_var]),
+        spends = adspend_sum_trf,
+        factors = params.units_ratio_spend_to_y,
+        weights = adspend_sum_raw
+
+        calc_roas(effects, spends, factors, weights)
+    end
+
+    cols = prettify_labels.(cols_spend)
+
+    pl3 = plot_response_curves_table(decay_rates, roass, mroas_at_means, cols, roas_total,
+                                     pplot)
+
+    ### PLOT 4
+    pl4 = let ad_effect_share_mean = (mean_fitted_effects(params.model_name, generated_data;
+                                                          extract_keys = [:mu_spend_by_var]) |>
+                                      percentage_share),
+        spend_share = (adspend_sum_raw |> percentage_share),
+        cols = prettify_labels.(cols_spend)
+
+        plot_effects_vs_spend(ad_effect_share_mean, spend_share, cols, pplot)
+    end
+
+    ####################
+    # 1-Pager
+
+    plot_array = [pl0, pl1, pl2, pl3, pl4]
+
+    # show final
+    pl = plot_mmm_one_pager(plot_array, 5, pplot)
+
+    return pl
+end
 ###############################
 ### Optimization
 
@@ -300,8 +384,11 @@ function plot_optimized_uplift_histogram(revenue_uplift, p)
                    label = "Uplift",
                    titlefontfize = p.title_fontsize, color = p.color_revenues)
     pl_max = maximum(yticks(pl)[1][1])
-    ymin = minimum(xticks(pl)[1][1])
-    plot!(pl, ylim = (0, pl_max * 1.2))
+    xmin = let tickvalues = xticks(pl)[1][1]
+        x_step_size = (tickvalues[2] - tickvalues[1])
+        xmin = minimum(tickvalues) - 0.5 * x_step_size
+    end
+    plot!(pl, ylim = (0, pl_max * 1.5))
 
     uplift_avg = mean(revenue_uplift)
     uplift_std = std(revenue_uplift)
@@ -309,11 +396,11 @@ function plot_optimized_uplift_histogram(revenue_uplift, p)
     # Summary
     annotate!(0, 0, text("", "helvetica bold", 10, :black, :top, :left))
     # annotate!(0,pl_max*1.2,text("Period: $(optim_start) - $(optim_end)","helvetica bold",10,:black,:top,:left))
-    annotate!(ymin, pl_max * 1.15,
+    annotate!(xmin, pl_max * 1.4,
               text("Uplift AVG: " * float_formatter1f(uplift_avg) * " / StDev: " *
                    float_formatter1f(uplift_std),
                    "helvetica bold", p.table_fontsize_body, :black, :mid, :left))
-    annotate!(ymin, pl_max * 1.1,
+    annotate!(xmin, pl_max * 1.35,
               text("Percentage of profitable scenarios: " *
                    pct_formatter1f(mean(revenue_uplift .> 0)),
                    "helvetica bold", p.table_fontsize_body, :black, :mid, :left))
@@ -338,5 +425,81 @@ function plot_optimization_one_pager(plot_array, frame_idx::Int64, p)
     pl = plot(plot_array_masked...,
               layout = @layout([A{0.01h}; [B{0.5w} grid(2, 1)]]),
               size = p.output_size_optim, dpi = p.output_dpi)
+    return pl
+end
+
+# wrapper to plot Optimization 1-pager
+function Plots.plot(optimal::OptimalBudget, fitted::Stage2Fit, inputs::InputData,
+                    pplot::ParamsPlot = ParamsPlot())
+    @unpack params, chain, model, generated_data = fitted
+    @unpack simulations_optim, X_spend_optim_trf = optimal
+    @unpack dt, cols_spend, X_spend, optim_mask, revert_pipe_y, revert_pipe_spend, fit_stage2_mask = inputs
+
+    chain_optim = Chains(chain, :parameters)
+
+    adspend_sum_trf = X_spend |> x -> to_masked_matrix(x, optim_mask) |> sum_columns
+    adspend_sum_raw = revert_pipe_spend(X_spend) |>
+                      x -> to_masked_matrix(x, optim_mask) |> sum_columns
+    adspend_sum_optim = revert_pipe_spend(X_spend_optim_trf) |>
+                        x -> to_masked_matrix(x, optim_mask) |> sum_columns
+
+    # Header
+    pl0 = plot(title = "Budget Optimization 1-Pager " * pplot.title_suffix, grid = false,
+               showaxis = false, ticks = false, bottom_margin = -0Plots.px)
+
+    ###
+    pl1 = let spend_share_prev = adspend_sum_raw |> percentage_share,
+        spend_share_optim = adspend_sum_optim |> percentage_share,
+        cols = prettify_labels.(cols_spend)
+
+        plot_optimized_spend_share_comparison(spend_share_prev, spend_share_optim, cols,
+                                              pplot)
+    end
+
+    ###
+    # Total ROAS
+    # TO DO: in period!
+    roas_total = let effects = mean_fitted_effects(params.model_name, simulations_optim;
+                                                   extract_keys = [:mu_spend_by_var]),
+        spends = adspend_sum_trf,
+        factors = params.units_ratio_spend_to_y,
+        weights = adspend_sum_raw
+
+        calc_roas(effects, spends, factors, weights)
+    end
+    pl2 = let roas_total = roas_total,
+        effect_prev = mean_fitted_effects(params.model_name, generated_data;
+                                          extract_keys = [:mu_spend], mask = optim_mask)[1],
+        effect_optim = mean_fitted_effects(params.model_name, simulations_optim;
+                                           extract_keys = [:mu_spend], mask = optim_mask)[1],
+        optim_start = dt[optim_mask] |> minimum,
+        optim_end = dt[optim_mask] |> maximum
+
+        plot_optimized_contribution(effect_prev, effect_optim, roas_total, optim_start,
+                                    optim_end, revert_pipe_y, pplot)
+    end
+
+    ###
+    pl3 = let simulations_prev = simulate_revenues_summed(chain_optim, model, optim_mask;
+                                                          extract_key = :mu),
+        simulations_optimized = simulate_revenues_summed(chain_optim,
+                                                         model.f(merge(model.args,
+                                                                       (;
+                                                                        X_spend = to_masked_matrix(X_spend_optim_trf,
+                                                                                                   fit_stage2_mask)))...),
+                                                         optim_mask; extract_key = :mu)
+
+        revenue_uplift = revert_pipe_y(simulations_optimized .- simulations_prev)
+
+        plot_optimized_uplift_histogram(revenue_uplift, pplot)
+    end
+
+    ####################
+    # 1-Pager
+
+    plot_array = [pl0, pl1, pl2, pl3]
+
+    # show final
+    pl = plot_optimization_one_pager(plot_array, 4, pplot)
     return pl
 end

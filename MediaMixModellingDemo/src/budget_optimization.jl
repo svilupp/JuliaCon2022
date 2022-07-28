@@ -32,7 +32,7 @@ function convert_budget_multiplier_to_spend_multiplier(spend_prev_trf::AbstractV
     spend_new_raw = multiply_and_normalize(
                                            # take summed up transformed spend and change to original domain
                                            spend_prev_trf .* factor_to_scale_spend_to_orig,
-                                           # multiply by the required weights 
+                                           # multiply by the required weights
                                            budget_multiplier)
     # apply spend scaling to transformed domain
     spend_new_trf = spend_new_raw ./ factor_to_scale_spend_to_orig
@@ -109,7 +109,7 @@ function workflow_budget_to_simulation(chain_optim::AbstractMCMC.AbstractChains,
 end
 
 """
-    generate_objective_func(chain_optim::AbstractMCMC.AbstractChains, 
+    generate_objective_func(chain_optim::AbstractMCMC.AbstractChains,
     model_orig::DynamicPPL.Model,
     X_spend::AbstractMatrix, optim_mask::BitVector,
     factor_to_scale_spend_to_orig::AbstractVector,
@@ -127,7 +127,7 @@ Notes:
 
 Optional: `simulation_basecase` can be provided to speed up the optimization (ie, avoid re-computing the revenue under the old budget)
 
-If `optim_mask` subsets data (ie, !=trues(size(X_spend,1))) then only the underlying segment of the `X_spend` matrix is changed 
+If `optim_mask` subsets data (ie, !=trues(size(X_spend,1))) then only the underlying segment of the `X_spend` matrix is changed
  and only that portion of simulated revenues is considered for objective function
 """
 function generate_objective_func(chain_optim::AbstractMCMC.AbstractChains,
@@ -180,11 +180,11 @@ end
 
 """
     generate_objective_func(
-        chain_optim::AbstractMCMC.AbstractChains, 
+        chain_optim::AbstractMCMC.AbstractChains,
             model_orig::DynamicPPL.Model,
         X_spend::AbstractMatrix, optim_mask::BitVector,
         spend_raw_sum::AbstractVector,
-        loss_func::Function = identity; 
+        loss_func::Function = identity;
         simulations_basecase = nothing,
         extract_key::Symbol=:y)
 
@@ -198,7 +198,7 @@ Notes:
 
 Optional: `simulation_basecase` can be provided to speed up the optimization (ie, avoid re-computing the revenue under the old budget)
 
-If `optim_mask` subsets data (ie, !=trues(size(X_spend,1))) then only the underlying segment of the `X_spend` matrix is changed 
+If `optim_mask` subsets data (ie, !=trues(size(X_spend,1))) then only the underlying segment of the `X_spend` matrix is changed
  and only that portion of simulated revenues is considered for objective function
 
 Example:
@@ -282,7 +282,7 @@ Example:
 Make sure to change the keyword to `parallel_evaluation=true`
 ```
 options = Metaheuristics.Options(time_limit=10.,debug=false,parallel_evaluation=true)
-@time result = Metaheuristics.optimize(x->threaded_objective_func(x,objective_func), bounds, 
+@time result = Metaheuristics.optimize(x->threaded_objective_func(x,objective_func), bounds,
     Metaheuristics.ECA(N=7*2*length(cols_spend),K=7,η_max=2.,options=options))
 ```
 """
@@ -297,4 +297,125 @@ function threaded_objective_func(budget_multipliers, objective_func)
         @inbounds hx[i, :] .= h_
     end
     return fx, gx, hx
+end
+
+Base.@kwdef struct OptimalBudget
+    multiplier_bounds::Any
+    budget_multiplier_optim::Any
+    X_spend_optim_trf::Any
+    simulations_optim::Any
+end
+
+function optimize(fitted::Stage2Fit, inputs::InputData;
+                  metaheuristics_options::Metaheuristics.Options = nothing,
+                  multiplier_bounds = nothing)
+    @unpack chain, model = fitted
+    @unpack y_std, cols_spend, X_spend, fit_stage2_mask, optim_mask, revert_pipe_spend = inputs
+
+    # Prepare basecase results to speed up the optimization
+    chain_optim = Chains(chain, :parameters)
+    simulations_prev = simulate_revenues_summed(chain_optim, model, optim_mask;
+                                                extract_key = :mu)
+
+    if isnothing(multiplier_bounds)
+        # boundaries on possible solution
+        lower_bound = 0.5 * ones(length(cols_spend)) # max 50% reduction
+        upper_bound = 1.5 * ones(length(cols_spend)) # max 50% increase
+        multiplier_bounds = [lower_bound upper_bound]'
+    end
+
+    # Bayesian Decision Theory -- how to weigh the outcomes across the posterior distribution
+    # define a simple asymmetric (risk-averse) loss function
+    loss_func(x) = x > 0 ? 0.5x : x
+    # plot(loss_func,-2,2)
+
+    # All channels must have some spend in the optimization period!
+    @assert all((@view(X_spend[optim_mask, :]) |> sum_columns) .> 0)
+
+    # Method with direct budget multiplier
+    # spend_raw_sum is masked with optim_mask!
+    spend_raw_sum = revert_pipe_spend(X_spend[optim_mask, :]) |> sum_columns
+
+    objective_func = generate_objective_func(chain_optim, model, Matrix(X_spend),
+                                             optim_mask,
+                                             spend_raw_sum, loss_func;
+                                             simulations_basecase = simulations_prev,
+                                             extract_key = :mu)
+
+    if isnothing(metaheuristics_options)
+        # time_limit is in seconds
+        # debug = true if you want to see each iteration
+        # parallel_evaluation = true if you have batch-enabled objective function (see docs for `threaded_objective_func`)
+        metaheuristics_options = Metaheuristics.Options(time_limit = 60.0, debug = false,
+                                                        parallel_evaluation = true)
+    end
+    # Set K parameter as the original paper
+    # Note: authors were running maximum evaluations = 10000 * number_of_dimensions
+    # Source: https://www.researchgate.net/publication/327631987_A_New_Evolutionary_Optimization_Method_Based_on_Center_of_Mass_Performance_and_Safety_Management
+
+    if metaheuristics_options.parallel_evaluation
+        ### Parallelized version
+        result = Metaheuristics.optimize(x -> threaded_objective_func(x, objective_func),
+                                         multiplier_bounds,
+                                         Metaheuristics.ECA(N = 7 * 2 * length(cols_spend),
+                                                            K = 7, η_max = 2.0,
+                                                            options = metaheuristics_options))
+    else
+        ### Single-thread version
+        result = Metaheuristics.optimize(objective_func, multiplier_bounds,
+                                         Metaheuristics.ECA(N = 7 * 2 * length(cols_spend),
+                                                            K = 7, η_max = 2.0,
+                                                            options = metaheuristics_options))
+    end
+
+    @info result
+
+    ############################
+    ### TRANSFORM THE OPTIMUM
+    loss_optim = Metaheuristics.minimum(result)
+    budget_multiplier_optim = Metaheuristics.minimizer(result)
+
+    # Careful: X_spend_optim_trf is not subset to optim_mask!
+    X_spend_optim_trf = copy(X_spend)
+    X_spend_optim_trf[optim_mask, :] .*= budget_multiplier_optim'
+
+    # replace the old spend with new and run the simulation
+    model_args_new = merge(model.args,
+                           (;
+                            X_spend = to_masked_matrix(X_spend_optim_trf, fit_stage2_mask)))
+    simulations_optim = generated_quantities(model.f(model_args_new...), chain_optim)
+
+    return OptimalBudget(;
+                         multiplier_bounds,
+                         budget_multiplier_optim,
+                         X_spend_optim_trf,
+                         simulations_optim)
+end
+
+function sanity_check_optimum(optimal::OptimalBudget, fitted::Stage2Fit, inputs::InputData)
+    @unpack params = fitted
+    @unpack y_std, cols_spend, X_spend, optim_mask, revert_pipe_spend = inputs
+    @unpack multiplier_bounds, budget_multiplier_optim, simulations_optim, X_spend_optim_trf = optimal
+
+    #############################
+    # Optimization smell tests
+
+    # check that the ad spend is the same
+    let new_spend_sum = revert_pipe_spend(X_spend_optim_trf) |> Matrix |> sum,
+        check_total_spend1 = revert_pipe_spend(X_spend) |> Matrix |> sum
+
+        @assert check_total_spend1>=new_spend_sum "Error: Ad spend has increased ($(check_total_spend1) vs $(new_spend_sum))"
+        @assert check_total_spend1 * 0.95<new_spend_sum "Error: Ad spend has decreased by more than 5%! ($(check_total_spend1) vs $(new_spend_sum))"
+    end
+
+    # check spend_multiplier that it's within bounds
+    @assert all(multiplier_bounds'[:, 1] .<= budget_multiplier_optim .<=
+                multiplier_bounds'[:, 2])
+
+    # Mean difference against the known revenues should not be negative
+    # because expected value of noise is zero, minimizer routine should prefer the same solution
+    let simulated_y = mean_fitted_effects(params.model_name, simulations_optim;
+                                          extract_keys = [:y], mask = optim_mask)[1]
+        @assert (simulated_y .- sum(y_std[optim_mask, :]))>0 "Suspicious: New optimum is lower than original revenues! Investigate!"
+    end
 end
