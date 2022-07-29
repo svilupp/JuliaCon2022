@@ -53,7 +53,7 @@ Y, X, col_names = create_dataset("2020-02-01", 105, 0);
 df = X
 df[!, :revenue] = vec(sum.(eachrow(Y)));
 
-img=plot(df.revenue,title="Generated revenues",label="",dpi=110)
+img = plot(df.revenue, title = "Generated revenues", label = "", dpi = 110)
 img = DisplayAs.PNG(img) # trick for Literate.jl
 #----------------------------------------------------------------------------
 

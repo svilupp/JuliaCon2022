@@ -56,7 +56,7 @@ Y, X, col_names = create_dataset("2020-02-01", 105, 0);
 df = X
 df[!, :revenue] = vec(sum.(eachrow(Y)));
 
-img=plot(df.revenue,title="Generated revenues",label="",dpi=110)
+img = plot(df.revenue, title = "Generated revenues", label = "", dpi = 110)
 img = DisplayAs.PNG(img) # trick for Literate.jl
 #----------------------------------------------------------------------------
 
@@ -101,7 +101,7 @@ pplot = ParamsPlot(title_suffix = EXPERIMENT_NAME)
 # Pick the ones with the highest value (usually only 1 or 2 max)
 
 ## what's the seasonality
-img=plot_periodogram(df.revenue .- mean(df.revenue), 3)
+img = plot_periodogram(df.revenue .- mean(df.revenue), 3)
 img = DisplayAs.PNG(img) # trick for Literate.jl
 #----------------------------------------------------------------------------
 
@@ -241,7 +241,7 @@ model_orig_stage1 = model_func_stage1(time_std,
 cond_model_stage1 = model_orig_stage1 | (; y = y_std);
 
 y_prior = mapreduce(x -> rand(model_orig_stage1).y, hcat, 1:100) |> vec
-img=plot_prior_predictive_histogram(y_std, y_prior, ParamsPlot())
+img = plot_prior_predictive_histogram(y_std, y_prior, ParamsPlot())
 img = DisplayAs.PNG(img) # trick for Literate.jl
 #----------------------------------------------------------------------------
 
@@ -265,7 +265,7 @@ quick_nuts_diagnostics(chain_stage1, max_depth)
 
 pred_vals_stage1 = predict(model_orig_stage1, chain_stage1, include_all = false);
 y_pred_stage1 = mean(pred_vals_stage1.value.data, dims = (1, 3)) |> vec;
-img=plot_model_fit_by_period(y_std, y_pred_stage1, ParamsPlot())
+img = plot_model_fit_by_period(y_std, y_pred_stage1, ParamsPlot())
 img = DisplayAs.PNG(img) # trick for Literate.jl
 
 #----------------------------------------------------------------------------
@@ -301,7 +301,7 @@ y_pred = sum(stage1_fit, dims = 2) |> vec
 
 plot_model_fit_by_period(y_std, y_pred,
                          ParamsPlot(title_suffix = " for the Trend Components"))
-img=plot_model_fit_by_period(y_std, y_pred_stage1, ParamsPlot())
+img = plot_model_fit_by_period(y_std, y_pred_stage1, ParamsPlot())
 img = DisplayAs.PNG(img) # trick for Literate.jl
 #----------------------------------------------------------------------------
 
@@ -326,7 +326,7 @@ p2 = set_priors_stage2_decay_rates(["digital", "tv", "digital"],
 sanity_check_priors(p2; X_spend, X_context, X_org);
 
 ## quick check of decay_rate priors
-img=plot_priors_decay_rate(p2, cols_spend)
+img = plot_priors_decay_rate(p2, cols_spend)
 img = DisplayAs.PNG(img) # trick for Literate.jl
 #----------------------------------------------------------------------------
 
@@ -344,7 +344,7 @@ y_std_masked = to_masked_matrix(y_std, FITTING_MASK)
 
 cond_model = model_orig | (; y = y_std_masked);
 y_prior = mapreduce(x -> rand(model_orig).y, hcat, 1:100) |> vec
-img=plot_prior_predictive_histogram(y_std_masked, y_prior, ParamsPlot())
+img = plot_prior_predictive_histogram(y_std_masked, y_prior, ParamsPlot())
 img = DisplayAs.PNG(img) # trick for Literate.jl
 #----------------------------------------------------------------------------
 
@@ -394,7 +394,7 @@ quick_nuts_diagnostics(chain, max_depth)
 y_pred = predict(model_orig, chain, include_all = false) |>
          x -> mean(x.value.data, dims = (1, 3)) |> vec
 
-img=plot_model_fit_by_period(y_std, y_pred, ParamsPlot())
+img = plot_model_fit_by_period(y_std, y_pred, ParamsPlot())
 img = DisplayAs.PNG(img) # trick for Literate.jl
 #----------------------------------------------------------------------------
 
