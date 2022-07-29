@@ -20,8 +20,9 @@
 #
 # For more details on the methodology and practical tips visit [MMM Demo Docs](https://svilupp.github.io/JuliaCon2022/dev/)
 
-using Pkg;
-Pkg.activate(".");
+using Pkg; #nb
+Pkg.activate("."); #nb
+#----------------------------------------------------------------------------
 
 import Optim
 import Metaheuristics
@@ -52,7 +53,7 @@ Y, X, col_names = create_dataset("2020-02-01", 105, 0);
 df = X
 df[!, :revenue] = vec(sum.(eachrow(Y)));
 
-img = plot(df.revenue)
+img=plot(df.revenue,title="Generated revenues",label="",dpi=110)
 img = DisplayAs.PNG(img) # trick for Literate.jl
 #----------------------------------------------------------------------------
 
