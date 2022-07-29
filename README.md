@@ -34,11 +34,11 @@ The second question is answered by the Optimization summary 1-pager:
 - We can easily see how to re-allocate our spend (eg, if you remember, Search had high ROAS, so its proposed share should go from 27% to 40%)
 - We can quantify the expected benefits of such change
 - Thanks to the Bayesian framework, we can quantify the uncertainty of the uplift 
-![Optimized Marketing Budget 1-pager summary](/MediaMixModellingDemo/presentation/assets/mmm-1pager_5.png "Optimized Marketing Budget 1-Pager Summary")
+![Optimized Marketing Budget 1-pager summary](/MediaMixModellingDemo/presentation/assets/optimization-1pager_4.png "Optimized Marketing Budget 1-Pager Summary")
 
 All that is left to do now, is to run the experiment with new budget!
 
-# MediaMixModelling
+# Media Mix Modelling
 Media Mix Modelling (MMM) is the go-to analysis for deciding how to spend your precious marketing budget. It has been around for more than half a century, but it's constantly being advanced and its importance is poised to increase with the rise of the privacy-conscious consumer.
 
 There are a few key marketing concepts that we are covered in the talk and are important for understanding and performing MMM, e.g., ad stock, saturation, ROAS and mROAS.
