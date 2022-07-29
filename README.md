@@ -3,7 +3,7 @@
 This is a supporting repository for a lightning talk to be given at JuliaCon 2022
 
 > **"Half the money I spend on advertising is wasted; the trouble is I don't know which half."**
-- J.Wanamaker, 19th-century retailer
+\- J.Wanamaker, 19th-century retailer
 
 Optimizing marketing spend is still difficult, but this [talk I gave at JuliaCon2022](https://youtu.be/nzR5duccxTg) introduces a modern marketing analysis, Media Mix Modelling (MMM), that can help with this difficult task.
 
