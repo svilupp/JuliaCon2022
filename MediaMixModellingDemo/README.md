@@ -9,10 +9,10 @@
 
 Optimizing marketing spend is still difficult, but this [talk I gave at JuliaCon2022](https://youtu.be/nzR5duccxTg) introduces a modern marketing analysis, Media Mix Modelling (MMM), that can help with this difficult task.
 
-We can combine the strength of Julia with Bayesian decision-making to optimize marketing spend for a hypothetical business.
-You can find the example analysis with high-level and low-level API in this repository (`1-demo-high-level.ipynb`). 
+We can combine the strength of Julia with Bayesian decision-making to optimize marketing spend.
+You can find the example analysis with high-level and low-level API in this repository (`MediaMixModellingDemo/1-demo-high-level.ipynb`). 
 
-If you just want to peek at the tutorial, check out the [[![Latest Docs](https://img.shields.io/badge/docs-latest-blue.svg)](https://svilupp.github.io/JuliaCon2022/dev/).
+If you just want to peek at the tutorial, check out the [![Latest Docs](https://img.shields.io/badge/docs-latest-blue.svg)](https://svilupp.github.io/JuliaCon2022/dev/).
 
 Presentation given at JuliaCon can be found in folder presentation (`notebook.jl`, use Pluto.jl to re-play).
 
@@ -26,13 +26,13 @@ The first question (and more) are answered by the MMM summary 1-pager:
 - We see the contributions of each marketing channel
 - We can quantify the behaviour of each marketing channel and the potential effect of additional $1 of spend
 - Most importantly, we can see that Ad spend vs its effects are misaligned, so there is potential for optimization!
-![Media Mix Modelling 1-pager summary](/presentation/assets/mmm-1pager_5.png "Media Mix Modelling 1-Pager Summary")
+![Media Mix Modelling 1-pager summary](/MediaMixModellingDemo/presentation/assets/mmm-1pager_5.png "Media Mix Modelling 1-Pager Summary")
 
 The second question is answered by the Optimization summary 1-pager:
 - We can easily see how to re-allocate our spend (eg, if you remember, Search had high ROAS, so its proposed share should go from 27% to 40%)
 - We can quantify the expected benefits of such change
 - Thanks to the Bayesian framework, we can quantify the uncertainty of the uplift 
-![Optimized Marketing Budget 1-pager summary](/presentation/assets/mmm-1pager_5.png "Optimized Marketing Budget 1-Pager Summary")
+![Optimized Marketing Budget 1-pager summary](/MediaMixModellingDemo/presentation/assets/mmm-1pager_5.png "Optimized Marketing Budget 1-Pager Summary")
 
 All that is left to do now, is to run the experiment with new budget!
 
@@ -41,7 +41,7 @@ Media Mix Modelling (MMM) is the go-to analysis for deciding how to spend your p
 
 There are a few key marketing concepts that we are covered in the talk and are important for understanding and performing MMM, e.g., ad stock, saturation, ROAS and mROAS.
 
-Please refer to [[![Latest Docs](https://img.shields.io/badge/docs-latest-blue.svg)](https://svilupp.github.io/JuliaCon2022/dev/) for detailed overview of methodology, practical tips and a lot of resources (and links to other tutorials). 
+Please refer to [![Latest Docs](https://img.shields.io/badge/docs-latest-blue.svg)](https://svilupp.github.io/JuliaCon2022/dev/) for detailed overview of methodology, practical tips and a lot of resources (and links to other tutorials). 
 
 # Implementation
 We will leverage the power of Bayesian inference with Turing.jl to establish the effectiveness of our campaigns (/marketing channels). The main advantage of the Bayesian approach is be the quantification of uncertainty, which we will channel into our decision-making when deciding on the budget allocations.
@@ -55,6 +55,6 @@ The implementation closely follows the workflow & methodology of the amazing Rob
 
 While there are many resources available for Python and R, I believe this is the first tutorial for MMM in Julia.
 
-Please refer to [[![Latest Docs](https://img.shields.io/badge/docs-latest-blue.svg)](https://svilupp.github.io/JuliaCon2022/dev/) for detailed overview of methodology, practical tips and a lot of resources (and links to other tutorials). 
+Please refer to [![Latest Docs](https://img.shields.io/badge/docs-latest-blue.svg)](https://svilupp.github.io/JuliaCon2022/dev/) for detailed overview of methodology, practical tips and a lot of resources (and links to other tutorials). 
 
 - July, 2022
