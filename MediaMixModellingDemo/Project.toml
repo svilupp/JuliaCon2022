@@ -53,7 +53,7 @@ Splines2 = "0.2"
 StatsFuns = "1"
 StatsPlots = "0.14"
 TableTransforms = "1"
-Turing = "0.21"
+Turing = "0.21, 0.22"
 julia = "1.6"
 
 [extras]
